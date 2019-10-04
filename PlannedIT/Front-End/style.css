@@ -1,0 +1,13 @@
+.dragSection {
+    margin: 5%;
+    padding: 5%;
+    background-color: azure;
+    display: flex;
+    flex-direction: row;
+}
+
+.element {
+    margin: 3%;
+    padding: 3%;
+    background-color: cadetblue;
+}
