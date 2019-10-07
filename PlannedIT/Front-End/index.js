@@ -1,3 +1,17 @@
+let app = angular.module('PlannedIT', ['ngRoute']);
+app.config($routeProvider => {
+    $routeProvider
+        .when('/', {
+            templateUrl: 'pages/landingPage.html',
+            controller: "mainController"
+        })
+
+        .when('/login', {
+            templateUrl: 'pages/login.html',
+            controller: 'loginController'
+        })
+});
+
 // Dragula
 // const Create_Event_Section = document.getElementById("eventCreationSection");
 // const Schedule_Section = document.getElementById("scheduleSection");
@@ -17,50 +31,6 @@ firebase.initializeApp({
 });
 
 var db = firebase.firestore();
-
-
-// async function loadUsers() {
-//     // const snapshot = await firebase.firestore().collection('users').get()
-//     // const users = snapshot.docs;
-//     // user = users[0]
-//     // if (user && user.exists) {
-//     //     const data = user.data();
-//     //     console.log(data);
-//     // }
-
-//     // await db.collection('users').get()
-//     //     .then(data => {
-//     //         const users = data.docs;
-//     //         users.forEach(user => {
-//     //             const userData = user.data();
-//     //             console.log(userData);
-//     //             // userList.innerHTML +=
-//     //             //     `
-//     //             // <section class="users" >
-//     //             //     <h2>${userData.name}</h2>
-//     //             //     <img src="${userData.Image}">
-//     //             //     <p>Email: ${userData.email}</p>
-//     //             // </section>
-//     //             // `
-//     //         });
-//     //         console.log(data.docs[0].data());
-//     //     });
-
-
-//     // .then(querySnapshot => {
-//     //     querySnapshot.docs.map((doc) => {
-//     //         console.log(doc.data);
-//     //         userList.innerHTML += `
-//     //     <div id="user">
-//     //         <h2>${doc.name}</h2>
-//     //         <img src="${doc.Image}">
-//     //         <p>Email: ${doc.email}</p>
-//     //     </div>
-//     //     `
-//     //     })
-//     // })
-// };
-
 
 //Login
 let login = document.getElementById("login");
@@ -125,6 +95,3 @@ function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     return datum.getTime() / 1000;
 }
-
-
-// loadUsers();

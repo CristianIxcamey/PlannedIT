@@ -10,17 +10,19 @@
     <script src="https://www.gstatic.com/firebasejs/6.6.2/firebase.js"></script>
     <script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-firestore.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.min.js"></script>
 </head>
 
 <body>
-    <section ng-app="ProfilesApp" class="Content-full">
+    <section ng-app="PlannedIT" class="Content-full">
         <section ng-controller="mainController" class="Content-full">
+            <div ng-view>
+
+            </div>
             <section id="AddUser">
-                <input type="text" id="email" placeholder="Email">
-                <input type="text" id="password" placeholder="Password">
+               
                 <input type="text" id="image" placeholder="Image Src">
                 <button id="login">Log in</button>
-                <button id="create">Create</button>
             </section>
             <section id="usersList">
 
