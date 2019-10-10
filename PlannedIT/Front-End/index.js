@@ -1,23 +1,19 @@
 //Firebase
 let submit = document.getElementById("create")
-
 firebase.initializeApp({
     apiKey: 'AIzaSyDOzxFLuKTo71jrcRzzGMHyHwSsalXPeTo',
     authDomain: 'plannedit-bc972.firebaseapp.com',
     databaseURL: "https://plannedit-bc972.firebaseio.com",
     projectId: 'plannedit-bc972'
 });
-
 var db = firebase.firestore();
-
-
-
-
+var userData = null;
 function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     return datum.getTime() / 1000;
 }
 
+//AngularJS
 let app = angular.module('PlannedIT', ['ngRoute']);
 app.config($routeProvider => {
     $routeProvider
@@ -40,15 +36,18 @@ app.config($routeProvider => {
             templateUrl: 'pages/home.html',
             controller: 'homeController'
         })
+
+        .when('/edtevent/:event')
 });
 
 app.controller('mainController', function ($scope, $http, $window) {
-    let login = document.getElementById("login");
-    let signup = document.getElementById("signup");
+    $scope.login = function () {
+        window.location.href = '/#!/login';
+    }
 
-    login.addEventListener('click', _ => {
-        
-    });
+    $scope.singup = function () {
+        window.location.href = '/#!/singup';
+    }
 });
 
 app.controller('loginController', function ($scope, $http, $window) {
@@ -66,24 +65,18 @@ app.controller('loginController', function ($scope, $http, $window) {
             console.log(`There was an error ${errorCode} with the message ${errorMessage}`);
             // ...
         });
-        const user = firebase.auth().currentUser;
 
-        if (user != null) {
-            let docref = db.collection('Users').doc(user.uid);
-            docref.get().then(function (doc) {
-                console.log(doc.data());
-            });
-            // console.log(user)
-        }
+        window.location.href = '/#!/home';
     });
 });
 
 app.controller('singUpController', function ($scope, $http, $window) {
     //sign up
-    let submit = document.getElementById("singUp")
+    // let submit = document.getElementById("singUp")
 
-    submit.addEventListener('click', async function signUp() {
-        await firebase.auth().createUserWithEmailAndPassword("Tester@test.com", "tester").catch(function (error) {
+    $scope.createUser = async function () {
+        let newuser = $scope.user
+        await firebase.auth().createUserWithEmailAndPassword(newuser.email, newuser.password).catch(function (error) {
             var errorCode = error.code;
             var errorMessage = error.message;
             console.log(`There was an error ${errorCode} with the message ${errorMessage}`);
@@ -92,9 +85,9 @@ app.controller('singUpController', function ($scope, $http, $window) {
                 const user = firebase.auth().currentUser;
                 if (user != null) {
                     let scheme = {
-                        name: "tester",
-                        email: "Tester@test.com",
-                        username: "tester1",
+                        name: newuser.name,
+                        email: newuser.email,
+                        username: newuser.username,
                         profileImage: "https://www.pinclipart.com/picdir/middle/181-1814767_person-svg-png-icon-free-download-profile-icon.png",
                         schedule: {
                             event1: {
@@ -113,13 +106,35 @@ app.controller('singUpController', function ($scope, $http, $window) {
                         .set(scheme)
                 };
             });
-    });
+
+        window.location.href = '/#!/home';
+    }
 
 });
 
-app.controller('singUpController', function ($scope, $http, $window) {
+app.controller('homeController', function ($scope, $http, $window) {
+    var data = userData;
+    $scope.test = "testing the thing"
+
+    const user = firebase.auth().currentUser;
+    $scope.fn1 = function () {
+        console.log(data);
+        document.getElementById("greeting").innerHTML = `Welcome back ${data.name}`;
+    };
+
+    if (user != null) {
+        let docref = db.collection('Users').doc(user.uid)
+        docref.get().then(function (doc) {
+            data = doc.data();
+            $scope.fn1();
+        });
+    };
 
 });
+
+async function genData() {
+
+}
 
 // Dragula
 // const Create_Event_Section = document.getElementById("eventCreationSection");
@@ -131,3 +146,6 @@ app.controller('singUpController', function ($scope, $http, $window) {
 
 
 
+async function signUp() {
+
+};
