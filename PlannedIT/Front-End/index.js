@@ -39,23 +39,36 @@ app.config($routeProvider => {
             templateUrl: 'pages/event.html',
             controller: 'eventController'
         })
+
+        .when('/addEvent', {
+            templateUrl: 'pages/createEvent.html',
+            controller: 'createEventController'
+        })
 });
 
-app.controller('mainController', function ($scope, $http, $window) {
-    $scope.login = function () {
-        window.location.href = '/#!/login';
-    }
+//AngularJS controllers
+app.controller('mainController', function ($scope) {
+    firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+            window.location.href = '/#!/home';
+        } else {
+            $scope.login = function () {
+                window.location.href = '/#!/login';
+            }
 
-    $scope.singup = function () {
-        window.location.href = '/#!/singup';
-    }
+            $scope.singup = function () {
+                window.location.href = '/#!/singup';
+            }
+        }
+    });
 });
 
-app.controller('loginController', function ($scope, $http, $window) {
+app.controller('loginController', function ($scope) {
+    if (firebase.auth().currentUser != null) {
+        window.location.href = '/#!/home';
+    }
     //Login
-    let login = document.getElementById("login");
-
-    login.addEventListener('click', async function login() {
+    $scope.login = async function login() {
         let email = document.getElementById('email').value;
         let password = document.getElementById('password').value;
         console.log(`The email is ${email} and the password is ${password}`);
@@ -66,17 +79,24 @@ app.controller('loginController', function ($scope, $http, $window) {
                     var errorCode = error.code;
                     var errorMessage = error.message;
                     console.log(`There was an error ${errorCode} with the message ${errorMessage}`);
+                    notie.alert({ type: 3, text: 'Email and/or password are incorrect' })
                     // ...
                 });
-
                 if (firebase.auth().currentUser.uid != null) {
                     window.location.href = '/#!/home';
                 }
             });
-    });
+    };
+
+    $scope.singup = function () {
+        window.location.href = '/#!/singup';
+    }
 });
 
-app.controller('singUpController', function ($scope, $http, $window) {
+app.controller('singUpController', function ($scope) {
+    if (firebase.auth().currentUser != null) {
+        window.location.href = '/#!/home';
+    }
     //sign up
     // let submit = document.getElementById("singUp")
 
@@ -86,6 +106,7 @@ app.controller('singUpController', function ($scope, $http, $window) {
             var errorCode = error.code;
             var errorMessage = error.message;
             console.log(`There was an error ${errorCode} with the message ${errorMessage}`);
+            notie.alert({ type: 3, text: 'This email is already in use' })
         })
             .then(() => {
                 const user = firebase.auth().currentUser;
@@ -99,10 +120,10 @@ app.controller('singUpController', function ($scope, $http, $window) {
                             {
                                 attendees: ["user1", "user2"],
                                 e_Description: "this is a tester event",
-                                e_End_Time: toTimestamp(2019, 10, 8, 16, 00, 00),
-                                e_Start_Time: toTimestamp(2019, 10, 08, 12, 30, 00),
+                                e_End_Time: toTimestamp(2019, 11, 8, 16, 00, 00),
+                                e_Start_Time: toTimestamp(2019, 11, 08, 12, 30, 00),
                                 e_Location: "3873 S. Sennie Dr.",
-                                e_Master: "tester",
+                                e_Master: newuser.name,
                                 e_Name: "event1"
                             }
                         ]
@@ -112,46 +133,65 @@ app.controller('singUpController', function ($scope, $http, $window) {
                         .set(scheme)
                 };
             });
-
         window.location.href = '/#!/home';
     }
 
-});
-
-app.controller('homeController', function ($scope, $http, $window) {
-    var data = userData;
-    const user = firebase.auth().currentUser;
-    let docref = db.collection('Users').doc(user.uid)
-    docref.get().then(function (doc) {
-        data = doc.data();
-        $scope.fn1();
-    });
-
-    $scope.fn1 = function () {
-        document.getElementById("greeting").innerHTML = `Welcome back ${data.name}`;
-        userEvents = data.schedule;
-        $scope.events = userEvents;
-
-        $scope.$apply();
-    };
-
-    $scope.viewEvent = function (index) {
-        currentEvent = userEvents[index];
-        window.location.href = `/#!/edtevent/${userEvents[index].e_Name}`;
+    $scope.login = function () {
+        window.location.href = '/#!/login';
     }
 
-    $scope.singOut = function () {
-        firebase.auth().signOut().then(function () {
-            window.location.href = `/#!/`;
-        }, function (error) {
-            console.log(error)
+});
+
+app.controller('homeController', function ($scope) {
+    if (firebase.auth().currentUser != null) {
+        var data = userData;
+        const user = firebase.auth().currentUser;
+        let docref = db.collection('Users').doc(user.uid)
+        docref.get().then(function (doc) {
+            data = doc.data();
+            $scope.fn1();
         });
-    };
+
+        $scope.fn1 = _ => {
+            document.getElementById("greeting").innerHTML = `Welcome back ${data.name}`;
+            userEvents = data.schedule;
+            $scope.events = userEvents;
+
+            $scope.$apply();
+        };
+
+        $scope.viewEvent = index => {
+            currentEvent = userEvents[index];
+            window.location.href = `/#!/edtevent/${userEvents[index].e_Name}`;
+        }
+
+        $scope.singOut = _ => {
+            firebase.auth().signOut().then(function () {
+                window.location.href = `/#!/`;
+            }, function (error) {
+                console.log(error)
+            });
+        };
+
+        $scope.createEvent = _ => {
+            window.location.href = `/#!/addEvent`;
+        }
+    } else {
+        window.location.href = '/#!/';
+    }
 });
 
 app.controller('eventController', function ($scope) {
-    $scope.eventName = currentEvent.name;
+    console.log(currentEvent.e_End_Time)
+    $scope.eventName = currentEvent.e_Name;
     $scope.eventMaster = currentEvent.e_Master;
+    $scope.setDate = _ => {
+        console.log($scope.date);
+    }
+});
+
+app.controller('createEventController', function ($scope) {
+
 });
 
 // Dragula
@@ -162,11 +202,15 @@ app.controller('eventController', function ($scope) {
 //     revertOnSpill: true
 // };
 
-async function signUp() {
-
-};
-
+//Additional Functions
 function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-    return datum.getTime() / 1000;
+    console.log(datum);
+    return datum;
+}
+
+const sessionStat = _ => {
+    if (firebase.auth().currentUser.uid != null) {
+        window.location.href = '/#!/home';
+    }
 }
