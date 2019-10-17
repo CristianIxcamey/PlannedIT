@@ -2,7 +2,20 @@
     <input ng-model="eventName" placeholder="Add Event Name"></input>
     <input ng-model="eventDescription" placeholder="Add Event Description"></input>
     <input ng-model="eventAddress" placeholder="Add Event Address"></input>
+    <section>
+        <h2>Add an Attendee</h2>
+        <input ng-model="addedAttendee" placeholder="Add Attendee"></input>
+        <div class="buttons" ng-click="userAdd()">Add User to Event</div>
+        <section id="addedAttendeeSection">
+            <section ng-repeat="x in list" class="AttendeeRepeat">
+                <div class="attendee">
+                    <h2>{{x.user}}</h2>
+                    <div class="closeBtn" ng-click="remove($index)">&times;</div>
+                </div>
+            </section>
+        </section>
+    </section>
     <input type="datetime-local" ng-model="dateS" placeholder="Date Start">
     <input type="datetime-local" ng-model="dateE" placeholder="Date End">
-    <div class="buttons" ng-click="setDate()">Save edits</div>
+    <div class="buttons" ng-click="createEvent()">Create Event</div>
 </section>

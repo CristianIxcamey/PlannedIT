@@ -10,6 +10,7 @@ var db = firebase.firestore();
 var userData = null;
 var userEvents = [];
 currentEvent = {};
+var docId = 0;
 
 //AngularJS
 let app = angular.module('PlannedIT', ['ngRoute']);
@@ -50,7 +51,7 @@ app.config($routeProvider => {
 app.controller('mainController', function ($scope) {
     firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
-            window.location.href = '/#!/home';
+            // window.location.href = '/#!/home';
         } else {
             $scope.login = function () {
                 window.location.href = '/#!/login';
@@ -191,7 +192,46 @@ app.controller('eventController', function ($scope) {
 });
 
 app.controller('createEventController', function ($scope) {
+    $scope.createEvent = _ => {
+        const user = firebase.auth().currentUser;
+        let finalAttendees = [];
+        $scope.list.forEach(element => {
+            finalAttendees.push(element.user);
+        });
+        let event = {
+            attendees: finalAttendees,
+            e_Name: $scope.eventName,
+            e_Description: $scope.eventDescription,
+            e_Location: $scope.eventAddress,
+            e_Start_Time: $scope.dateS,
+            e_End_Time: $scope.dateE
+        }
+        var docRef = db.collection("Users").doc(user.uid);
 
+        docRef.update({
+            schedule: firebase.firestore.FieldValue.arrayUnion(event)
+        });
+
+        window.location.href = '/#!/home';
+    };
+
+    $scope.list = [];
+
+    $scope.userAdd = _ => {
+        $scope.list.push({ "user": $scope.addedAttendee });
+        $scope.addedAttendee = "";
+    }
+
+    $scope.remove = index => {
+        let newUserList = $scope.list;
+        $scope.list = [];
+        newUserList.forEach(user => {
+            if (user.user != newUserList[index].user) {
+                $scope.list.push(user);
+            };
+        });
+        $scope
+    }
 });
 
 // Dragula
@@ -211,6 +251,6 @@ function toTimestamp(year, month, day, hour, minute, second) {
 
 const sessionStat = _ => {
     if (firebase.auth().currentUser.uid != null) {
-        window.location.href = '/#!/home';
+        // window.location.href = '/#!/home';
     }
 }
