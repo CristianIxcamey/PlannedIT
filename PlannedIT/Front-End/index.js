@@ -18,7 +18,7 @@ app.config($routeProvider => {
     $routeProvider
         .when('/', {
             templateUrl: 'pages/landingPage.html',
-            controller: "mainController"
+            controller: "landingController"
         })
 
         .when('/login', {
@@ -36,7 +36,7 @@ app.config($routeProvider => {
             controller: 'homeController'
         })
 
-        .when('/edtevent/:event', {
+        .when('/viewEvent/:event', {
             templateUrl: 'pages/event.html',
             controller: 'eventController'
         })
@@ -45,13 +45,22 @@ app.config($routeProvider => {
             templateUrl: 'pages/createEvent.html',
             controller: 'createEventController'
         })
+
+        .when('/editEvent/:event', {
+            templateUrl: 'pages/createEvent.html',
+            controller: 'updateEvent'
+        })
 });
 
 //AngularJS controllers
 app.controller('mainController', function ($scope) {
+
+});
+
+app.controller('landingController', function ($scope) {
     firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
-            // window.location.href = '/#!/home';
+            window.location.href = '/#!/home';
         } else {
             $scope.login = function () {
                 window.location.href = '/#!/login';
@@ -62,7 +71,7 @@ app.controller('mainController', function ($scope) {
             }
         }
     });
-});
+})
 
 app.controller('loginController', function ($scope) {
     if (firebase.auth().currentUser != null) {
@@ -163,7 +172,7 @@ app.controller('homeController', function ($scope) {
 
         $scope.viewEvent = index => {
             currentEvent = userEvents[index];
-            window.location.href = `/#!/edtevent/${userEvents[index].e_Name}`;
+            window.location.href = `/#!/viewEvent/${userEvents[index].e_Name}`;
         }
 
         $scope.singOut = _ => {
@@ -183,17 +192,34 @@ app.controller('homeController', function ($scope) {
 });
 
 app.controller('eventController', function ($scope) {
-    console.log(currentEvent.e_End_Time)
-    $scope.eventName = currentEvent.e_Name;
-    $scope.eventMaster = currentEvent.e_Master;
-    $scope.setDate = _ => {
-        console.log($scope.date);
+    $scope.event = currentEvent;
+    $scope.event.e_Start_Time = currentEvent.e_Start_Time.toDate().toUTCString();
+    $scope.event.e_End_Time = currentEvent.e_End_Time.toDate().toUTCString();
+    $scope.editEvent = _ => {
+        window.location.href = `/#!/editEvent/${currentEvent.e_Name}`;
     }
+
+    $scope.deleteEvent = _ => {
+        const user = firebase.auth().currentUser;
+        let newEventarray = []
+
+        userEvents.forEach(event => {
+            if (event.e_Name != currentEvent.e_Name) {
+                newEventarray.push(event);
+            };
+        });
+
+        var docRef = db.collection("Users").doc(user.uid);
+        docRef.update({
+            schedule: newEventarray
+        });
+        window.location.href = '/#!/home';
+    };
 });
 
 app.controller('createEventController', function ($scope) {
-    $scope.createEvent = _ => {
-        const user = firebase.auth().currentUser;
+    const user = firebase.auth().currentUser;
+    $scope.Submit = _ => {
         let finalAttendees = [];
         $scope.list.forEach(element => {
             finalAttendees.push(element.user);
@@ -201,6 +227,7 @@ app.controller('createEventController', function ($scope) {
         let event = {
             attendees: finalAttendees,
             e_Name: $scope.eventName,
+            e_Master: "tester",
             e_Description: $scope.eventDescription,
             e_Location: $scope.eventAddress,
             e_Start_Time: $scope.dateS,
@@ -232,6 +259,16 @@ app.controller('createEventController', function ($scope) {
         });
         $scope
     }
+});
+
+app.controller('updateEvent', function ($scope) {
+    $scope.list = currentEvent.attendees;
+    document.getElementById("subButton").innerHTML = "Update event";
+    $scope.eventName = currentEvent.e_Name;
+    $scope.eventDescription = currentEvent.e_Description;
+    $scope.eventAddress = currentEvent.e_Location;
+    $scope.dateS = currentEvent.e_Start_Time.toDate();
+    $scope.dateE = currentEvent.e_End_Time.toDate();
 });
 
 // Dragula

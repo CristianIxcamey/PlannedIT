@@ -1,6 +1,12 @@
-<section>
-    <h1 ng-bind="eventName"></h1>
-    <h1 ng-bind="eventMaster"></h1>
-    <input type="datetime-local" ng-model="date">
-    <div class="buttons" ng-click="setDate()">Save edits</div>
+<section id="eventView">
+    <h1 ng-bind="event.e_Name"></h1>
+    <h1 ng-bind="event.e_Master"></h1>
+    <h3 ng-bind="event.e_Description"></h3>
+    <h2 ng-bind="event.e_Location"></h2>
+    <section>
+        <h3 ng-bind="event.e_Start_Time"></h3>
+        <h3 ng-bind="event.e_End_Time"></h3>
+    </section>
+    <div class="buttons" ng-click="editEvent()">Edit Event</div>
+    <div class="buttons" ng-click="deleteEvent()">Delete Event</div>
 </section>
