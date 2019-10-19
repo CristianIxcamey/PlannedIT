@@ -9,8 +9,10 @@ firebase.initializeApp({
 var db = firebase.firestore();
 var userData = null;
 var userEvents = [];
-currentEvent = {};
+let currentEvent = {};
 var docId = 0;
+var dateS = '';
+var dateE = '';
 
 //AngularJS
 let app = angular.module('PlannedIT', ['ngRoute']);
@@ -192,12 +194,15 @@ app.controller('homeController', function ($scope) {
 });
 
 app.controller('eventController', function ($scope) {
+    dateS = currentEvent.e_Start_Time;
+    dateE = currentEvent.e_End_Time;
     $scope.event = currentEvent;
+    $scope.list = currentEvent.attendees;
     $scope.event.e_Start_Time = currentEvent.e_Start_Time.toDate().toUTCString();
     $scope.event.e_End_Time = currentEvent.e_End_Time.toDate().toUTCString();
     $scope.editEvent = _ => {
         window.location.href = `/#!/editEvent/${currentEvent.e_Name}`;
-    }
+    };
 
     $scope.deleteEvent = _ => {
         const user = firebase.auth().currentUser;
@@ -257,18 +262,72 @@ app.controller('createEventController', function ($scope) {
                 $scope.list.push(user);
             };
         });
-        $scope
+
     }
 });
 
 app.controller('updateEvent', function ($scope) {
-    $scope.list = currentEvent.attendees;
+    $scope.list = [];
+    currentEvent.attendees.forEach(attendee => {
+        $scope.list.push({ "user": attendee });
+    });
     document.getElementById("subButton").innerHTML = "Update event";
     $scope.eventName = currentEvent.e_Name;
     $scope.eventDescription = currentEvent.e_Description;
     $scope.eventAddress = currentEvent.e_Location;
-    $scope.dateS = currentEvent.e_Start_Time.toDate();
-    $scope.dateE = currentEvent.e_End_Time.toDate();
+    $scope.dateS = dateS.toDate();
+    $scope.dateE = dateE.toDate();
+
+
+    $scope.Submit = _ => {
+        const user = firebase.auth().currentUser;
+        const newEventarray = [];
+        const finalAttendees = [];
+
+        $scope.list.forEach(element => {
+            finalAttendees.push(element.user);
+        });
+
+        userEvents.forEach(event => {
+            if (event.e_Name == currentEvent.e_Name) {
+                let newEvent = {
+                    attendees: finalAttendees,
+                    e_Name: $scope.eventName,
+                    e_Master: "tester",
+                    e_Description: $scope.eventDescription,
+                    e_Location: $scope.eventAddress,
+                    e_Start_Time: $scope.dateS,
+                    e_End_Time: $scope.dateE
+                }
+                currentEvent = newEvent;
+                newEventarray.push(newEvent);
+            } else {
+                newEventarray.push(event);
+            }
+        });
+
+        var docRef = db.collection("Users").doc(user.uid);
+        docRef.update({
+            schedule: newEventarray
+        });
+        window.location.href = '/#!/home';
+    };
+
+    $scope.userAdd = _ => {
+        $scope.list.push({ "user": $scope.addedAttendee });
+        $scope.addedAttendee = "";
+    }
+
+    $scope.remove = index => {
+        let newUserList = $scope.list;
+        $scope.list = [];
+        newUserList.forEach(user => {
+            if (user.user != newUserList[index].user) {
+                $scope.list.push(user);
+            };
+        });
+
+    };
 });
 
 // Dragula
