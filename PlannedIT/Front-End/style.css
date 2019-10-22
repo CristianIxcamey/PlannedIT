@@ -101,3 +101,13 @@ h3 {
 .AttendeeRepeat {
     margin: 2%;
 }
+
+#userInfoSection {
+    display: none;
+    margin: 2% 10%;
+}
+
+#userInfoSection #user img {
+    width: 50%;
+    border-radius: 50px;
+}

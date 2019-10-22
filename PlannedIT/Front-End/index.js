@@ -7,7 +7,7 @@ firebase.initializeApp({
     projectId: 'plannedit-bc972'
 });
 var db = firebase.firestore();
-var userData = null;
+// var userData = null;
 var userEvents = [];
 let currentEvent = {};
 var docId = 0;
@@ -50,7 +50,17 @@ app.config($routeProvider => {
 
         .when('/editEvent/:event', {
             templateUrl: 'pages/createEvent.html',
-            controller: 'updateEvent'
+            controller: 'updateEventController'
+        })
+
+        .when('/profile', {
+            templateUrl: 'pages/profile.html',
+            controller: 'updateEventController'
+        })
+
+        .when('/addFriend', {
+            templateUrl: 'pages/addFriend.html',
+            controller: 'addFriendController'
         })
 });
 
@@ -156,7 +166,7 @@ app.controller('singUpController', function ($scope) {
 
 app.controller('homeController', function ($scope) {
     if (firebase.auth().currentUser != null) {
-        var data = userData;
+        var data = '';
         const user = firebase.auth().currentUser;
         let docref = db.collection('Users').doc(user.uid)
         docref.get().then(function (doc) {
@@ -266,7 +276,7 @@ app.controller('createEventController', function ($scope) {
     }
 });
 
-app.controller('updateEvent', function ($scope) {
+app.controller('updateEventController', function ($scope) {
     $scope.list = [];
     currentEvent.attendees.forEach(attendee => {
         $scope.list.push({ "user": attendee });
@@ -328,6 +338,57 @@ app.controller('updateEvent', function ($scope) {
         });
 
     };
+});
+
+app.controller('addFriendController', function ($scope) {
+    if (firebase.auth().currentUser != null) {
+        let addSection = document.getElementById("userInfoSection")
+        let documents = null;
+        let userData = [];
+        let friend = null;
+        let docref = db.collection('Users')
+        const user = firebase.auth().currentUser;
+
+        docref.get().then(function (res) {
+            documents = res.docs;
+            documents.forEach(doc => {
+                userData.push(doc);
+            });
+        });
+
+        $scope.search = _ => {
+            let userFound = false;
+            let currUser = null;
+            userData.forEach(user => {
+                if (user.data().name == $scope.searchTxt) {
+                    currUser = user;
+                    userFound = true;
+                };
+            });
+            if (userFound == false) {
+                addSection.style.display = "none";
+                notie.alert({ type: 3, text: 'Could not find user, please try again' });
+            } else {
+                $scope.displayUser(currUser);
+            }
+        };
+
+        $scope.displayUser = currUser => {
+            friend = currUser;
+            $scope.user = {
+                img: currUser.profileImage,
+                name: currUser.name,
+                email: currUser.email
+            };
+            addSection.style.display = "block";
+        };
+
+        $scope.addFriend = _ => {
+            console.log(friend);
+        }
+    } else {
+        window.location.href = '/#!/';
+    }
 });
 
 // Dragula
