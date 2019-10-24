@@ -35,7 +35,7 @@ h3 {
     border: 1px solid #282828;
     color: #282828;
     background-color: #E0A214;
-    margin: 10% auto;
+    margin: 60px auto;
 }
 
 .buttons:hover {
@@ -102,12 +102,11 @@ h3 {
     margin: 2%;
 }
 
-#userInfoSection {
-    display: none;
+.userInfoSection {
     margin: 2% 10%;
 }
 
-#userInfoSection #user img {
+.userInfoSection .user img {
     width: 50%;
     border-radius: 50px;
 }

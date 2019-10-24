@@ -58,6 +58,11 @@ app.config($routeProvider => {
             controller: 'updateEventController'
         })
 
+        .when('/friends', {
+            templateUrl: 'pages/friends.html',
+            controller: 'friendsController'
+        })
+
         .when('/addFriend', {
             templateUrl: 'pages/addFriend.html',
             controller: 'addFriendController'
@@ -66,7 +71,6 @@ app.config($routeProvider => {
 
 //AngularJS controllers
 app.controller('mainController', function ($scope) {
-
 });
 
 app.controller('landingController', function ($scope) {
@@ -340,15 +344,110 @@ app.controller('updateEventController', function ($scope) {
     };
 });
 
+app.controller('friendsController', function ($scope) {
+    if (firebase.auth().currentUser != null) {
+        let data = '';
+        const user = firebase.auth().currentUser;
+        let docref = db.collection('Users').doc(user.uid)
+        docref.get().then(function (doc) {
+            data = doc.data();
+            $scope.loadRequests();
+        });
+
+        $scope.loadRequests = _ => {
+            $scope.friendRequests = data.friendRequests;
+            $scope.friends = data.friends;
+            $scope.$apply();
+        }
+
+        $scope.addFriend = index => {
+            const reqUserRef = db.collection('Users').doc(data.friendRequests[index].id);
+            const requestingUserPromise = getReqData(data.friendRequests[index].id);
+            requestingUserPromise.then(function (val) {
+                for (var i = 0; i < val.pendingFriends.length; i++) {
+                    if (val.pendingFriends[i].username == data.username) {
+                        val.friends.push(val.pendingFriends[i]);
+                        val.pendingFriends.splice(i, 1);
+                    };
+                };
+                data.friends.push(data.friendRequests[index]);
+                data.friendRequests.splice(index, 1);
+                reqUserRef.update({
+                    pendingFriends: val.pendingFriends,
+                    friends: val.friends
+                });
+                docref.update({
+                    friendRequests: data.friendRequests,
+                    friends: data.friends
+                });
+                $scope.friends = data.friends;
+                $scope.friendRequests = data.friendRequests;
+                $scope.$apply();
+            });
+        }
+
+        $scope.declineFriend = index => {
+            let requestorRef = db.collection('Users').doc(data.friendRequests[index].id);
+            const requestorPromise = getReqData(data.friendRequests[index].id);
+            requestorPromise.then(function (val) {
+                for (let i = 0; i < val.pendingFriends.length; i++) {
+                    if (val.pendingFriends[i].username == data.username) {
+                        val.pendingFriends.splice(i, 1);
+                        requestorRef.update({
+                            pendingFriends: val.pendingFriends
+                        });
+                    };
+                };
+                data.friendRequests.splice(index, 1);
+                docref.update({
+                    friendRequests: data.friendRequests
+                });
+                $scope.friendRequests = data.friendRequests;
+                $scope.$apply();
+            });
+        }
+
+        $scope.deleteFriend = index => {
+            let friendRef = db.collection('Users').doc(data.friends[index].id);
+            const friendPromise = getReqData(data.friends[index].id);
+            friendPromise.then(function (val) {
+                for (let i = 0; i < val.friends.length; i++) {
+                    if (val.friends[i].username == data.username) {
+                        val.friends.splice(i, 1);
+                        friendRef.update({
+                            friends: val.friends
+                        });
+                    };
+                };
+                data.friends.splice(index, 1);
+                docref.update({
+                    friends: data.friends
+                });
+                $scope.friends = data.friends;
+                $scope.$apply();
+            });
+        }
+    } else {
+        window.location.href = '/#!/';
+    }
+});
+
 app.controller('addFriendController', function ($scope) {
     if (firebase.auth().currentUser != null) {
-        let addSection = document.getElementById("userInfoSection")
+        let addSection = document.getElementsByClassName("userInfoSection")
         let documents = null;
         let userData = [];
         let friend = null;
-        let docref = db.collection('Users')
+        let currUser = [];
         const user = firebase.auth().currentUser;
+        let userRef = db.collection('Users').doc(user.uid);
+        userRef.get().then(function (res) {
+            $scope.reset();
+            currUser.push(res);
+            currUser.push(res.data());
+        });
 
+        let docref = db.collection('Users');
         docref.get().then(function (res) {
             documents = res.docs;
             documents.forEach(doc => {
@@ -358,33 +457,70 @@ app.controller('addFriendController', function ($scope) {
 
         $scope.search = _ => {
             let userFound = false;
-            let currUser = null;
+            let userToAdd = [];
             userData.forEach(user => {
-                if (user.data().name == $scope.searchTxt) {
-                    currUser = user;
+                if (currUser[1].username == $scope.searchTxt) {
+                    $scope.reset();
+                    notie.alert({ type: 3, text: 'Cannot add yourself, sorry' });
                     userFound = true;
+                } else if (user.data().username == $scope.searchTxt) {
+                    userToAdd.push(user)
+                    userToAdd.push(user.data());
+                    userFound = true;
+                    $scope.displayUser(userToAdd);
                 };
             });
             if (userFound == false) {
-                addSection.style.display = "none";
+                $scope.reset();
                 notie.alert({ type: 3, text: 'Could not find user, please try again' });
-            } else {
-                $scope.displayUser(currUser);
             }
         };
 
-        $scope.displayUser = currUser => {
-            friend = currUser;
-            $scope.user = {
-                img: currUser.profileImage,
-                name: currUser.name,
-                email: currUser.email
+        $scope.displayUser = userToAdd => {
+            friend = {
+                id: userToAdd[0].id,
+                img: userToAdd[1].profileImage,
+                name: userToAdd[1].name,
+                email: userToAdd[1].email,
+                username: userToAdd[1].username
             };
-            addSection.style.display = "block";
+            $scope.user = friend;
+            addSection[0].style.display = "block";
         };
 
         $scope.addFriend = _ => {
-            console.log(friend);
+            let alreadyPending = false;
+
+            currUser[1].pendingFriends.forEach(penFriend => {
+                if (penFriend.username == friend.username) {
+                    alreadyPending = true;
+                }
+            });
+
+            if (alreadyPending == false) {
+                userRef.update({
+                    pendingFriends: firebase.firestore.FieldValue.arrayUnion(friend)
+                });
+
+                let currentUser = {
+                    id: currUser[0].id,
+                    img: currUser[1].profileImage,
+                    name: currUser[1].name,
+                    email: currUser[1].email,
+                    username: currUser[1].username
+                };
+
+                db.collection('Users').doc(friend.id).update({
+                    friendRequests: firebase.firestore.FieldValue.arrayUnion(currentUser)
+                });
+            };
+            $scope.reset();
+            notie.alert({ type: 1, text: 'Friend request sent!' });
+        }
+
+        $scope.reset = _ => {
+            addSection[0].style.display = "none";
+            $scope.searchTxt = "";
         }
     } else {
         window.location.href = '/#!/';
@@ -404,6 +540,15 @@ function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     console.log(datum);
     return datum;
+}
+
+async function getReqData(id) {
+    let res = null;
+    let reqRef = db.collection('Users').doc(id);
+    await reqRef.get().then(function (doc) {
+        res = doc.data()
+    });
+    return res;
 }
 
 const sessionStat = _ => {
