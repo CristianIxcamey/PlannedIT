@@ -1,13 +1,17 @@
 <section>
     <h1>Current Friends</h1>
-    <section ng-repeat="x in friends" class="userInfoSection">
-        <div class="user">
-            <img ng-src="{{x.img}}" />
-            <h2>{{x.username}}</h2>
-            <h2>{{x.email}}</h2>
-        </div>
+    <section ng-repeat="x in friends">
+        <section class="userInfoSection">
+            <div class="user">
+                <img ng-src="{{x.img}}" />
+                <h2>{{x.username}}</h2>
+                <h2>{{x.email}}</h2>
+            </div>
+        </section>
         <div class="buttons" ng-click="deleteFriend($index)">Remove Friend</div>
+        <div class="buttons" ng-click="viewSchedule($index)">View Schedule</div>
     </section>
+
     <h1>Friend Requests</h1>
     <section ng-repeat="x in friendRequests" class="userInfoSection">
         <div class="user">
@@ -18,4 +22,5 @@
         <div class="buttons" ng-click="addFriend($index)">Accept Request</div>
         <div class="buttons" ng-click="declineFriend($index)">Decline Request</div>
     </section>
+    <div class="buttons" ng-click="searchFriends()">Search for and add Friend</div>
 </section>

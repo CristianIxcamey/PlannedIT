@@ -7,12 +7,7 @@ firebase.initializeApp({
     projectId: 'plannedit-bc972'
 });
 var db = firebase.firestore();
-// var userData = null;
-var userEvents = [];
-let currentEvent = {};
-var docId = 0;
-var dateS = '';
-var dateE = '';
+const menuIcon = document.getElementById("menuIcon");
 
 //AngularJS
 let app = angular.module('PlannedIT', ['ngRoute']);
@@ -38,7 +33,7 @@ app.config($routeProvider => {
             controller: 'homeController'
         })
 
-        .when('/viewEvent/:event', {
+        .when('/viewEvent/:userId/:index', {
             templateUrl: 'pages/event.html',
             controller: 'eventController'
         })
@@ -48,14 +43,14 @@ app.config($routeProvider => {
             controller: 'createEventController'
         })
 
-        .when('/editEvent/:event', {
+        .when('/editEvent/:userId/:index', {
             templateUrl: 'pages/createEvent.html',
             controller: 'updateEventController'
         })
 
-        .when('/profile', {
-            templateUrl: 'pages/profile.html',
-            controller: 'updateEventController'
+        .when('/invitations', {
+            templateUrl: 'pages/invitations.html',
+            controller: 'invitationsController'
         })
 
         .when('/friends', {
@@ -63,14 +58,25 @@ app.config($routeProvider => {
             controller: 'friendsController'
         })
 
+        .when('/friendSchedule/:id', {
+            templateUrl: 'pages/friendSchedule.html',
+            controller: 'friendScheduleController'
+        })
+
         .when('/addFriend', {
             templateUrl: 'pages/addFriend.html',
             controller: 'addFriendController'
+        })
+
+        .when('/profile', {
+            templateUrl: 'pages/profile.html',
+            controller: 'profileController'
         })
 });
 
 //AngularJS controllers
 app.controller('mainController', function ($scope) {
+
 });
 
 app.controller('landingController', function ($scope) {
@@ -78,6 +84,7 @@ app.controller('landingController', function ($scope) {
         if (user) {
             window.location.href = '/#!/home';
         } else {
+            document.getElementsByTagName("nav")[0].style.display = "none";
             $scope.login = function () {
                 window.location.href = '/#!/login';
             }
@@ -170,6 +177,7 @@ app.controller('singUpController', function ($scope) {
 
 app.controller('homeController', function ($scope) {
     if (firebase.auth().currentUser != null) {
+        menuIcon.style.display = "flex";
         var data = '';
         const user = firebase.auth().currentUser;
         let docref = db.collection('Users').doc(user.uid)
@@ -180,15 +188,14 @@ app.controller('homeController', function ($scope) {
 
         $scope.fn1 = _ => {
             document.getElementById("greeting").innerHTML = `Welcome back ${data.name}`;
-            userEvents = data.schedule;
-            $scope.events = userEvents;
+            document.getElementById("loadingSection").style.display = "none";
+            $scope.events = data.schedule;
 
             $scope.$apply();
         };
 
         $scope.viewEvent = index => {
-            currentEvent = userEvents[index];
-            window.location.href = `/#!/viewEvent/${userEvents[index].e_Name}`;
+            window.location.href = `/#!/viewEvent/${user.uid}/${index}`;
         }
 
         $scope.singOut = _ => {
@@ -207,33 +214,82 @@ app.controller('homeController', function ($scope) {
     }
 });
 
-app.controller('eventController', function ($scope) {
-    dateS = currentEvent.e_Start_Time;
-    dateE = currentEvent.e_End_Time;
-    $scope.event = currentEvent;
-    $scope.list = currentEvent.attendees;
-    $scope.event.e_Start_Time = currentEvent.e_Start_Time.toDate().toUTCString();
-    $scope.event.e_End_Time = currentEvent.e_End_Time.toDate().toUTCString();
-    $scope.editEvent = _ => {
-        window.location.href = `/#!/editEvent/${currentEvent.e_Name}`;
-    };
-
-    $scope.deleteEvent = _ => {
+app.controller('profileController', function ($scope) {
+    if (firebase.auth().currentUser != null) {
         const user = firebase.auth().currentUser;
-        let newEventarray = []
+        const docref = db.collection('Users').doc(user.uid);
+        docref.get().then(function (doc) {
+            $scope.loadUser(doc.data());
+        });
 
-        userEvents.forEach(event => {
-            if (event.e_Name != currentEvent.e_Name) {
-                newEventarray.push(event);
+        $scope.loadUser = userData => {
+            $scope.user = userData;
+            $scope.$apply();
+            console.log(userData);
+        }
+
+    } else {
+        window.location.href = '/#!/';
+    }
+});
+
+app.controller("invitationsController", function ($scope) {
+    if (firebase.auth().currentUser != null) {
+
+    } else {
+        window.location.href = '/#!/';
+    }
+});
+
+app.controller('eventController', function ($scope, $routeParams) {
+    if (firebase.auth().currentUser != null) {
+        const userID = firebase.auth().currentUser.uid;
+        const userRef = db.collection('Users').doc($routeParams.userId);
+        let userData = null;
+        let event = null;
+        userRef.get().then(function (doc) {
+            userData = doc.data()
+            $scope.loadEvent(doc.data());
+        });
+
+        $scope.loadEvent = userData => {
+            event = userData.schedule[$routeParams.index];
+            event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
+            event.e_End_Time = event.e_End_Time.toDate().toUTCString();
+            $scope.event = event;
+            $scope.list = event.attendees;
+            $scope.$apply();
+        };
+
+        if (userID == $routeParams.userId) {
+            $scope.editEvent = _ => {
+                window.location.href = `/#!/editEvent/${userID}/${$routeParams.index}`;
             };
-        });
 
-        var docRef = db.collection("Users").doc(user.uid);
-        docRef.update({
-            schedule: newEventarray
-        });
-        window.location.href = '/#!/home';
-    };
+            $scope.deleteEvent = _ => {
+                const user = firebase.auth().currentUser;
+                let newEventarray = []
+
+                userData.schedule.forEach(event => {
+                    if (event.e_Name != event.e_Name) {
+                        newEventarray.push(event);
+                    };
+                });
+
+                var docRef = db.collection("Users").doc(user.uid);
+                docRef.update({
+                    schedule: newEventarray
+                });
+                window.location.href = '/#!/home';
+            };
+        } else {
+            document.getElementById("creatorOptions").style.display = "none";
+        }
+
+    } else {
+        window.location.href = '/#!/';
+    }
+
 });
 
 app.controller('createEventController', function ($scope) {
@@ -280,68 +336,92 @@ app.controller('createEventController', function ($scope) {
     }
 });
 
-app.controller('updateEventController', function ($scope) {
-    $scope.list = [];
-    currentEvent.attendees.forEach(attendee => {
-        $scope.list.push({ "user": attendee });
-    });
-    document.getElementById("subButton").innerHTML = "Update event";
-    $scope.eventName = currentEvent.e_Name;
-    $scope.eventDescription = currentEvent.e_Description;
-    $scope.eventAddress = currentEvent.e_Location;
-    $scope.dateS = dateS.toDate();
-    $scope.dateE = dateE.toDate();
+app.controller('updateEventController', function ($scope, $routeParams) {
+    if (firebase.auth().currentUser != null) {
+        const userID = firebase.auth().currentUser.uid;
+        if (userID == $routeParams.userId) {
+            let userData = null;
+            let event = null;
+            let masterName = "";
+            const userRef = db.collection('Users').doc($routeParams.userId);
+            userRef.get().then(function (doc) {
+                userData = doc.data();
+                $scope.loadEvent(doc.data());
+            });
 
+            $scope.loadEvent = userData => {
+                masterName = userData.username;
+                event = userData.schedule[$routeParams.index];
+                console.log(event);
+                $scope.list = [];
+                event.attendees.forEach(attendee => {
+                    $scope.list.push({ "user": attendee });
+                });
+                document.getElementById("subButton").innerHTML = "Update event";
+                $scope.eventName = event.e_Name;
+                $scope.eventDescription = event.e_Description;
+                $scope.eventAddress = event.e_Location;
+                $scope.dateS = event.e_Start_Time.toDate();
+                $scope.dateE = event.e_End_Time.toDate();
+                $scope.$apply();
+            };
 
-    $scope.Submit = _ => {
-        const user = firebase.auth().currentUser;
-        const newEventarray = [];
-        const finalAttendees = [];
+            $scope.Submit = _ => {
+                const user = firebase.auth().currentUser;
+                const newEventarray = [];
+                const finalAttendees = [];
 
-        $scope.list.forEach(element => {
-            finalAttendees.push(element.user);
-        });
+                $scope.list.forEach(element => {
+                    finalAttendees.push(element.user);
+                });
 
-        userEvents.forEach(event => {
-            if (event.e_Name == currentEvent.e_Name) {
-                let newEvent = {
-                    attendees: finalAttendees,
-                    e_Name: $scope.eventName,
-                    e_Master: "tester",
-                    e_Description: $scope.eventDescription,
-                    e_Location: $scope.eventAddress,
-                    e_Start_Time: $scope.dateS,
-                    e_End_Time: $scope.dateE
-                }
-                currentEvent = newEvent;
-                newEventarray.push(newEvent);
-            } else {
-                newEventarray.push(event);
+                userData.schedule.forEach(event => {
+                    if (event.e_Name == event.e_Name) {
+                        let newEvent = {
+                            attendees: finalAttendees,
+                            e_Name: $scope.eventName,
+                            e_Master: masterName,
+                            e_Description: $scope.eventDescription,
+                            e_Location: $scope.eventAddress,
+                            e_Start_Time: $scope.dateS,
+                            e_End_Time: $scope.dateE
+                        }
+                        event = newEvent;
+                        newEventarray.push(newEvent);
+                    } else {
+                        newEventarray.push(event);
+                    }
+                });
+
+                var docRef = db.collection("Users").doc(user.uid);
+                docRef.update({
+                    schedule: newEventarray
+                });
+                window.location.href = '/#!/home';
+            };
+
+            $scope.userAdd = _ => {
+                $scope.list.push({ "user": $scope.addedAttendee });
+                $scope.addedAttendee = "";
             }
-        });
 
-        var docRef = db.collection("Users").doc(user.uid);
-        docRef.update({
-            schedule: newEventarray
-        });
-        window.location.href = '/#!/home';
-    };
+            $scope.remove = index => {
+                let newUserList = $scope.list;
+                $scope.list = [];
+                newUserList.forEach(user => {
+                    if (user.user != newUserList[index].user) {
+                        $scope.list.push(user);
+                    };
+                });
 
-    $scope.userAdd = _ => {
-        $scope.list.push({ "user": $scope.addedAttendee });
-        $scope.addedAttendee = "";
+            };
+        } else {
+            window.location.href = '/#!/';
+        }
+    } else {
+        window.location.href = '/#!/';
     }
 
-    $scope.remove = index => {
-        let newUserList = $scope.list;
-        $scope.list = [];
-        newUserList.forEach(user => {
-            if (user.user != newUserList[index].user) {
-                $scope.list.push(user);
-            };
-        });
-
-    };
 });
 
 app.controller('friendsController', function ($scope) {
@@ -426,6 +506,37 @@ app.controller('friendsController', function ($scope) {
                 $scope.friends = data.friends;
                 $scope.$apply();
             });
+        }
+
+        $scope.viewSchedule = index => {
+            window.location.href = '/#!/friendSchedule/' + data.friends[index].id;
+        }
+
+        $scope.searchFriends = _ => {
+            window.location.href = '/#!/addFriend';
+        }
+
+
+    } else {
+        window.location.href = '/#!/';
+    }
+});
+
+app.controller('friendScheduleController', function ($scope, $routeParams) {
+    if (firebase.auth().currentUser != null) {
+        const userRef = db.collection('Users').doc($routeParams.id);
+        userRef.get().then(function (doc) {
+            $scope.loadSchedule(doc.data());
+        });
+
+        $scope.loadSchedule = userData => {
+            $scope.user = userData;
+            $scope.events = userData.schedule;
+            $scope.$apply();
+        };
+
+        $scope.viewEvent = index => {
+            window.location.href = `/#!/viewEvent/${$routeParams.id}/${index}`;
         }
     } else {
         window.location.href = '/#!/';
@@ -556,3 +667,15 @@ const sessionStat = _ => {
         // window.location.href = '/#!/home';
     }
 }
+
+const menuFunction = _ => {
+    let menuCont = document.getElementById("menuContent");
+    if (menuCont.style.display == "none") {
+        menuCont.style.display = "flex";
+        menuIcon.innerHTML = "&#9776;";
+    } else {
+        menuCont.style.display = "none";
+        menuIcon.innerHTML = "&#10006;";
+    }
+}
+menuIcon.addEventListener('click', menuFunction);

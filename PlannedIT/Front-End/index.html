@@ -15,31 +15,48 @@
 </head>
 
 <body>
-    <!-- <header>
+    <div id="loadingSection">
+        <h1>LOADING</h1>
+    </div>
+    <header>
         <nav>
-            <a href="#0">
-                menu
+            <a id="menuIcon">
+                &#9776;
                 <span aria-hidden="true"></span>
             </a>
 
-            <ul>
+            <ul id="menuContent">
                 <li>
-                    <a href="">
-                        ::before
-                        <span>Home</span>
-                        ::after
+                    <a href="/#!/home">
+                        <span>
+                            PlannedIt
+                        </span>
                     </a>
                 </li>
                 <li>
-                    <a>
-                        ::before
-                        <span>Profile</span>
-                        ::after
+                    <a href="/#!/profile">
+                        <span>
+                            Profile
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/#!/friends">
+                        <span>
+                            Friends
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/#!/invitations">
+                        <span>
+                            Invitations
+                        </span>
                     </a>
                 </li>
             </ul>
         </nav>
-    </header> -->
+    </header>
     <section ng-app="PlannedIT" class="Content-full">
         <section ng-controller="mainController" class="Content-full">
             <div ng-view>
