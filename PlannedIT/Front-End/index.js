@@ -104,14 +104,12 @@ app.controller('loginController', function ($scope) {
     $scope.login = async function login() {
         let email = document.getElementById('email').value;
         let password = document.getElementById('password').value;
-        console.log(`The email is ${email} and the password is ${password}`);
         firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .then(async function () {
                 await firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
                     // Handle Errors here.
                     var errorCode = error.code;
                     var errorMessage = error.message;
-                    console.log(`There was an error ${errorCode} with the message ${errorMessage}`);
                     notie.alert({ type: 3, text: 'Email and/or password are incorrect' })
                     // ...
                 });
@@ -138,7 +136,6 @@ app.controller('singUpController', function ($scope) {
         await firebase.auth().createUserWithEmailAndPassword(newuser.email, newuser.password).catch(function (error) {
             var errorCode = error.code;
             var errorMessage = error.message;
-            console.log(`There was an error ${errorCode} with the message ${errorMessage}`);
             notie.alert({ type: 3, text: 'This email is already in use' })
         })
             .then(() => {
@@ -225,7 +222,6 @@ app.controller('profileController', function ($scope) {
         $scope.loadUser = userData => {
             $scope.user = userData;
             $scope.$apply();
-            console.log(userData);
         }
 
     } else {
@@ -235,7 +231,76 @@ app.controller('profileController', function ($scope) {
 
 app.controller("invitationsController", function ($scope) {
     if (firebase.auth().currentUser != null) {
+        const user = firebase.auth().currentUser;
+        let userData;
+        const userRef = db.collection('Users').doc(user.uid);
+        // let docref = firebase.database().ref('Users/' + user.uid + '/invitations');
+        // docref.on('value', function (snapshot) {
+        //     console.log("running in async method")
+        //     $scope.loadData(snapshot.val());
+        // });
 
+        // docref.once('value').then(function (snapshot) {
+        //     $scope.loadData(snapshot.val());
+        // });
+
+        userRef.get().then(function (doc) {
+            userData = doc.data();
+            $scope.loadData();
+        });
+
+        $scope.loadData = _ => {
+            for (let i = 0; i < userData.length; i++) {
+                data[i].eventStart = userData[i].eventStart.toDate().toUTCString();
+                data[i].eventEnd = userData[i].eventEnd.toDate().toUTCString();
+            };
+            $scope.invitations = userData.invitations;
+            $scope.$apply();
+        };
+
+        $scope.eventOptions = index => {
+            const event = userData.invitations[index];
+            let originalEvent;
+            const inviteRef = db.collection('Users').doc(event.masterID);
+            const newInvitationList = [];
+            inviteRef.get().then(function (doc) {
+                originalEvent = doc.data().schedule[index];
+            });
+
+            userData.invitations.forEach(invite => {
+                if (invite.eventTitle != userData.invitations[index].eventTitle) {
+                    newInvitationList.push(invite);
+                }
+            });
+
+            notie.select({
+                text: "Event Options",
+                choices: [
+                    {
+                        type: 1,
+                        text: 'Accept Invitation',
+                        handler: function () {
+                            userRef.update({
+                                schedule: firebase.firestore.FieldValue.arrayUnion(originalEvent),
+                                invitations: newInvitationList
+                            });
+                            notie.alert({ type: 1, text: 'Invitation Accepted' })
+                        }
+                    },
+                    {
+                        type: 3,
+                        text: "Deny Invitation",
+                        handler: function () {
+                            userRef.update({
+                                invitations: newInvitationList
+                            });
+                            notie.alert({ type: 3, text: 'Invitation Denied' })
+                        }
+                    }
+                ]
+
+            });
+        }
     } else {
         window.location.href = '/#!/';
     }
@@ -270,9 +335,9 @@ app.controller('eventController', function ($scope, $routeParams) {
                 const user = firebase.auth().currentUser;
                 let newEventarray = []
 
-                userData.schedule.forEach(event => {
-                    if (event.e_Name != event.e_Name) {
-                        newEventarray.push(event);
+                userData.schedule.forEach(element => {
+                    if (element.e_Name != event.e_Name) {
+                        newEventarray.push(element);
                     };
                 });
 
@@ -293,46 +358,78 @@ app.controller('eventController', function ($scope, $routeParams) {
 });
 
 app.controller('createEventController', function ($scope) {
-    const user = firebase.auth().currentUser;
-    $scope.Submit = _ => {
-        let finalAttendees = [];
-        $scope.list.forEach(element => {
-            finalAttendees.push(element.user);
-        });
-        let event = {
-            attendees: finalAttendees,
-            e_Name: $scope.eventName,
-            e_Master: "tester",
-            e_Description: $scope.eventDescription,
-            e_Location: $scope.eventAddress,
-            e_Start_Time: $scope.dateS,
-            e_End_Time: $scope.dateE
-        }
+    if (firebase.auth().currentUser != null) {
+        const user = firebase.auth().currentUser;
+        let userData;
         var docRef = db.collection("Users").doc(user.uid);
-
-        docRef.update({
-            schedule: firebase.firestore.FieldValue.arrayUnion(event)
+        docRef.get().then(function (doc) {
+            userData = doc.data();
         });
 
-        window.location.href = '/#!/home';
-    };
+        $scope.Submit = _ => {
+            let finalAttendees = [];
+            $scope.list.forEach(element => {
+                finalAttendees.push(element.user);
+            });
+            let event = {
+                attendees: finalAttendees,
+                e_Name: $scope.eventName,
+                e_Master: userData.username,
+                e_Description: $scope.eventDescription,
+                e_Location: $scope.eventAddress,
+                e_Start_Time: $scope.dateS,
+                e_End_Time: $scope.dateE
+            }
 
-    $scope.list = [];
+            docRef.update({
+                schedule: firebase.firestore.FieldValue.arrayUnion(event)
+            });
 
-    $scope.userAdd = _ => {
-        $scope.list.push({ "user": $scope.addedAttendee });
-        $scope.addedAttendee = "";
-    }
+            const invitationEvent = {
+                eventTitle: event.e_Name,
+                eventMaster: event.e_Master,
+                masterID: user.uid,
+                eventDesc: event.e_Description,
+                eventLocation: event.e_Location,
+                eventIndex: userData.schedule.length,
+                eventStart: event.e_Start_Time,
+                eventEnd: event.e_End_Time
 
-    $scope.remove = index => {
-        let newUserList = $scope.list;
-        $scope.list = [];
-        newUserList.forEach(user => {
-            if (user.user != newUserList[index].user) {
-                $scope.list.push(user);
+
             };
-        });
 
+            event.attendees.forEach(user => {
+                userData.friends.forEach(friend => {
+                    if (user == friend.username) {
+                        db.collection('Users').doc(friend.id).update({
+                            invitations: firebase.firestore.FieldValue.arrayUnion(invitationEvent)
+                        });
+                    }
+                });
+            });
+
+            window.location.href = '/#!/home';
+        };
+
+        $scope.list = [];
+
+        $scope.userAdd = _ => {
+            $scope.list.push({ "user": $scope.addedAttendee });
+            $scope.addedAttendee = "";
+        }
+
+        $scope.remove = index => {
+            let newUserList = $scope.list;
+            $scope.list = [];
+            newUserList.forEach(user => {
+                if (user.user != newUserList[index].user) {
+                    $scope.list.push(user);
+                };
+            });
+
+        }
+    } else {
+        window.location.href = '/#!/home';
     }
 });
 
@@ -352,7 +449,6 @@ app.controller('updateEventController', function ($scope, $routeParams) {
             $scope.loadEvent = userData => {
                 masterName = userData.username;
                 event = userData.schedule[$routeParams.index];
-                console.log(event);
                 $scope.list = [];
                 event.attendees.forEach(attendee => {
                     $scope.list.push({ "user": attendee });
@@ -649,7 +745,6 @@ app.controller('addFriendController', function ($scope) {
 //Additional Functions
 function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-    console.log(datum);
     return datum;
 }
 
