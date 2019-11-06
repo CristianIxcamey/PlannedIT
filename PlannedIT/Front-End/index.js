@@ -33,7 +33,7 @@ app.config($routeProvider => {
             controller: 'homeController'
         })
 
-        .when('/viewEvent/:userId/:index', {
+        .when('/viewEvent/:userId/:eventID', {
             templateUrl: 'pages/event.html',
             controller: 'eventController'
         })
@@ -43,7 +43,7 @@ app.config($routeProvider => {
             controller: 'createEventController'
         })
 
-        .when('/editEvent/:userId/:index', {
+        .when('/editEvent/:userId/:eventID', {
             templateUrl: 'pages/createEvent.html',
             controller: 'updateEventController'
         })
@@ -51,6 +51,11 @@ app.config($routeProvider => {
         .when('/invitations', {
             templateUrl: 'pages/invitations.html',
             controller: 'invitationsController'
+        })
+
+        .when('/invitations/view/:userId/:eventID', {
+            templateUrl: 'pages/viewInvitations.html',
+            controller: 'viewInvitationsController'
         })
 
         .when('/friends', {
@@ -192,7 +197,8 @@ app.controller('homeController', function ($scope) {
         };
 
         $scope.viewEvent = index => {
-            window.location.href = `/#!/viewEvent/${user.uid}/${index}`;
+            let event = getEvent(data.schedule, data.schedule[index].id);
+            window.location.href = `/#!/viewEvent/${user.uid}/${event.id}`;
         }
 
         $scope.singOut = _ => {
@@ -200,6 +206,7 @@ app.controller('homeController', function ($scope) {
                 window.location.href = `/#!/`;
             }, function (error) {
                 console.log(error)
+
             });
         };
 
@@ -234,15 +241,6 @@ app.controller("invitationsController", function ($scope) {
         const user = firebase.auth().currentUser;
         let userData;
         const userRef = db.collection('Users').doc(user.uid);
-        // let docref = firebase.database().ref('Users/' + user.uid + '/invitations');
-        // docref.on('value', function (snapshot) {
-        //     console.log("running in async method")
-        //     $scope.loadData(snapshot.val());
-        // });
-
-        // docref.once('value').then(function (snapshot) {
-        //     $scope.loadData(snapshot.val());
-        // });
 
         userRef.get().then(function (doc) {
             userData = doc.data();
@@ -259,12 +257,13 @@ app.controller("invitationsController", function ($scope) {
         };
 
         $scope.eventOptions = index => {
-            const event = userData.invitations[index];
+            const event = getEvent(userData.invitations, userData.invitations[index].id);
             let originalEvent;
             const inviteRef = db.collection('Users').doc(event.masterID);
             const newInvitationList = [];
             inviteRef.get().then(function (doc) {
-                originalEvent = doc.data().schedule[index];
+                const docData = doc.data();
+                originalEvent = getEvent(docData.schedule, event.id);
             });
 
             userData.invitations.forEach(invite => {
@@ -296,6 +295,13 @@ app.controller("invitationsController", function ($scope) {
                             });
                             notie.alert({ type: 3, text: 'Invitation Denied' })
                         }
+                    },
+                    {
+                        type: 4,
+                        text: "View Event Information",
+                        handler: function () {
+                            window.location.href = `/#!/invitations/view/${userData.invitations[index].masterID}/${userData.invitations[index].eventId}`;
+                        }
                     }
                 ]
 
@@ -305,6 +311,26 @@ app.controller("invitationsController", function ($scope) {
         window.location.href = '/#!/';
     }
 });
+
+app.controller("viewInvitationsController", function ($scope, $routeParams) {
+    if (firebase.auth().currentUser != null) {
+        const userRef = db.collection('Users').doc($routeParams.userId);
+        let userData;
+        let event;
+        userRef.get().then(function (doc) {
+            userData = doc.data();
+            event = getEvent(userData.schedule, $routeParams.eventID);
+            $scope.loadEvent();
+        });
+
+        $scope.loadEvent = _ => {
+            $scope.event = event;
+            $scope.$apply();
+        }
+    } else {
+        window.location.href = '/#!/';
+    }
+})
 
 app.controller('eventController', function ($scope, $routeParams) {
     if (firebase.auth().currentUser != null) {
@@ -318,7 +344,7 @@ app.controller('eventController', function ($scope, $routeParams) {
         });
 
         $scope.loadEvent = userData => {
-            event = userData.schedule[$routeParams.index];
+            event = getEvent(userData.schedule, $routeParams.eventID);
             event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
             event.e_End_Time = event.e_End_Time.toDate().toUTCString();
             $scope.event = event;
@@ -328,7 +354,7 @@ app.controller('eventController', function ($scope, $routeParams) {
 
         if (userID == $routeParams.userId) {
             $scope.editEvent = _ => {
-                window.location.href = `/#!/editEvent/${userID}/${$routeParams.index}`;
+                window.location.href = `/#!/editEvent/${userID}/${$routeParams.eventID}`;
             };
 
             $scope.deleteEvent = _ => {
@@ -372,6 +398,7 @@ app.controller('createEventController', function ($scope) {
                 finalAttendees.push(element.user);
             });
             let event = {
+                id: genID(),
                 attendees: finalAttendees,
                 e_Name: $scope.eventName,
                 e_Master: userData.username,
@@ -391,7 +418,7 @@ app.controller('createEventController', function ($scope) {
                 masterID: user.uid,
                 eventDesc: event.e_Description,
                 eventLocation: event.e_Location,
-                eventIndex: userData.schedule.length,
+                eventId: event.id,
                 eventStart: event.e_Start_Time,
                 eventEnd: event.e_End_Time
 
@@ -448,7 +475,7 @@ app.controller('updateEventController', function ($scope, $routeParams) {
 
             $scope.loadEvent = userData => {
                 masterName = userData.username;
-                event = userData.schedule[$routeParams.index];
+                event = getEvent(userData.schedule, $routeParams.eventID);
                 $scope.list = [];
                 event.attendees.forEach(attendee => {
                     $scope.list.push({ "user": attendee });
@@ -773,4 +800,22 @@ const menuFunction = _ => {
         menuIcon.innerHTML = "&#10006;";
     }
 }
+
+const genID = _ => {
+    let rand = Math.floor((Math.random() * 8999) + 1001);
+    let digits = new Date().getTime();
+    const id = digits.toString() + rand.toString();
+    return id;
+}
+
+const getEvent = (allEvents, eventId) => {
+    let res = "";
+    allEvents.forEach(curEvent => {
+        if (curEvent.id == eventId) {
+            res = curEvent;
+        };
+    });
+    return res;
+}
+
 menuIcon.addEventListener('click', menuFunction);
