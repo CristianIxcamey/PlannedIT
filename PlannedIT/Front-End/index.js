@@ -248,11 +248,12 @@ app.controller("invitationsController", function ($scope) {
         });
 
         $scope.loadData = _ => {
-            for (let i = 0; i < userData.length; i++) {
-                data[i].eventStart = userData[i].eventStart.toDate().toUTCString();
-                data[i].eventEnd = userData[i].eventEnd.toDate().toUTCString();
+            let data = userData.invitations;
+            for (let i = 0; i < data.length; i++) {
+                data[i].eventStart = data[i].eventStart.toDate().toUTCString();
+                data[i].eventEnd = data[i].eventEnd.toDate().toUTCString();
             };
-            $scope.invitations = userData.invitations;
+            $scope.invitations = data;
             $scope.$apply();
         };
 
@@ -315,6 +316,7 @@ app.controller("invitationsController", function ($scope) {
 app.controller("viewInvitationsController", function ($scope, $routeParams) {
     if (firebase.auth().currentUser != null) {
         const userRef = db.collection('Users').doc($routeParams.userId);
+        let currUserData;
         let userData;
         let event;
         userRef.get().then(function (doc) {
@@ -323,10 +325,35 @@ app.controller("viewInvitationsController", function ($scope, $routeParams) {
             $scope.loadEvent();
         });
 
+        db.collection('Users').doc(firebase.auth().currentUser.uid).get().then(function (doc) {
+            currUserData = doc.data();
+        });
+
         $scope.loadEvent = _ => {
             $scope.event = event;
+            $scope.event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
+            $scope.event.e_End_Time = event.e_End_Time.toDate().toUTCString();
             $scope.$apply();
         }
+
+        $scope.accept = _ => {
+
+        }
+
+        $scope.decline = _ => {
+            const invitations = currUserData.invitations;
+            for (let i = 0; i < invitations.length; i++) {
+                if (event.id == invitations[i].eventId) {
+                    invitations.splice(i, 1);
+                }
+            }
+            console.log(invitations);
+        }
+
+        $scope.counterReq = _ => {
+
+        }
+
     } else {
         window.location.href = '/#!/';
     }
@@ -347,8 +374,14 @@ app.controller('eventController', function ($scope, $routeParams) {
             event = getEvent(userData.schedule, $routeParams.eventID);
             event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
             event.e_End_Time = event.e_End_Time.toDate().toUTCString();
+            const confirmedAtt = [];
+            event.attendees.forEach(element => {
+                if (element.hasAccepted) {
+                    confirmedAtt.push(element.name);
+                };
+            });
             $scope.event = event;
-            $scope.list = event.attendees;
+            $scope.list = confirmedAtt;
             $scope.$apply();
         };
 
@@ -395,8 +428,18 @@ app.controller('createEventController', function ($scope) {
         $scope.Submit = _ => {
             let finalAttendees = [];
             $scope.list.forEach(element => {
-                finalAttendees.push(element.user);
+                finalAttendees.push(element);
             });
+
+            for (let i = 0; i < finalAttendees.length; i++) {
+                userData.friends.forEach(friend => {
+                    if (finalAttendees[i].name == friend.username) {
+                        finalAttendees[i].userID = friend.id;
+                        finalAttendees[i].hasAccepted = false;
+                    };
+                });
+            }
+
             let event = {
                 id: genID(),
                 attendees: finalAttendees,
@@ -427,7 +470,7 @@ app.controller('createEventController', function ($scope) {
 
             event.attendees.forEach(user => {
                 userData.friends.forEach(friend => {
-                    if (user == friend.username) {
+                    if (user.name == friend.username) {
                         db.collection('Users').doc(friend.id).update({
                             invitations: firebase.firestore.FieldValue.arrayUnion(invitationEvent)
                         });
@@ -441,7 +484,11 @@ app.controller('createEventController', function ($scope) {
         $scope.list = [];
 
         $scope.userAdd = _ => {
-            $scope.list.push({ "user": $scope.addedAttendee });
+            $scope.list.push({
+                "name": $scope.addedAttendee,
+                "hasAccepted": true,
+                "userID": ""
+            });
             $scope.addedAttendee = "";
         }
 
@@ -449,7 +496,7 @@ app.controller('createEventController', function ($scope) {
             let newUserList = $scope.list;
             $scope.list = [];
             newUserList.forEach(user => {
-                if (user.user != newUserList[index].user) {
+                if (user.name != newUserList[index].name) {
                     $scope.list.push(user);
                 };
             });

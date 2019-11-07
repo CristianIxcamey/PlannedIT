@@ -1,10 +1,9 @@
 <section>
     <section ng-repeat="x in invitations">
-        <section ng-click="eventOptions($index)">
-            <h3 class="eventTitle">{{x.eventTitle}}</h3>
-            <section>
-                <p>{{x.eventStart}}</p>
-                <p>{{x.eventEnd}}</p>
+        <section ng-click="eventOptions($index)" class="invitations">
+            <h1 class="eventTitle">{{x.eventTitle}}</h1>
+            <section id="times">
+                <h4>{{x.eventStart}} - {{x.eventEnd}}</h4>
             </section>
         </section>
     </section>
