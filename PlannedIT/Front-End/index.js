@@ -179,6 +179,7 @@ app.controller('singUpController', function ($scope) {
 
 app.controller('homeController', function ($scope) {
     if (firebase.auth().currentUser != null) {
+        document.getElementsByTagName("nav")[0].style.display = "flex";
         menuIcon.style.display = "flex";
         var data = '';
         const user = firebase.auth().currentUser;
@@ -315,43 +316,113 @@ app.controller("invitationsController", function ($scope) {
 
 app.controller("viewInvitationsController", function ($scope, $routeParams) {
     if (firebase.auth().currentUser != null) {
-        const userRef = db.collection('Users').doc($routeParams.userId);
+        const currUserRef = db.collection("Users").doc(firebase.auth().currentUser.uid);
         let currUserData;
+        const userRef = db.collection('Users').doc($routeParams.userId);
         let userData;
         let event;
+        let invitations;
+        let start;
+        let end
         userRef.get().then(function (doc) {
             userData = doc.data();
             event = getEvent(userData.schedule, $routeParams.eventID);
             $scope.loadEvent();
         });
 
-        db.collection('Users').doc(firebase.auth().currentUser.uid).get().then(function (doc) {
+        currUserRef.get().then(function (doc) {
             currUserData = doc.data();
-        });
-
-        $scope.loadEvent = _ => {
-            $scope.event = event;
-            $scope.event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
-            $scope.event.e_End_Time = event.e_End_Time.toDate().toUTCString();
-            $scope.$apply();
-        }
-
-        $scope.accept = _ => {
-
-        }
-
-        $scope.decline = _ => {
-            const invitations = currUserData.invitations;
+            invitations = currUserData.invitations;
             for (let i = 0; i < invitations.length; i++) {
                 if (event.id == invitations[i].eventId) {
                     invitations.splice(i, 1);
                 }
             }
-            console.log(invitations);
+        });
+
+        $scope.loadEvent = _ => {
+            $scope.event = event;
+            start = event.e_Start_Time;
+            end = event.e_End_Time;
+            $scope.event.e_Start_Time = $scope.event.e_Start_Time.toDate().toUTCString();
+            $scope.event.e_End_Time = $scope.event.e_End_Time.toDate().toUTCString();
+            $scope.$apply();
+        }
+
+        $scope.accept = _ => {
+            const userSchedule = userData.schedule;
+            userSchedule.some(element => {
+                if (element.id == $routeParams.eventID) {
+                    element.attendees.some(attendee => {
+                        if (attendee.userID == firebase.auth().currentUser.uid) {
+                            attendee.hasAccepted = true;
+                            return true;
+                        }
+                    });
+                    element.e_Start_Time = start;
+                    element.e_End_Time = end;
+                    event = element;
+                    return true;
+                }
+            });
+
+
+
+            console.log(event);
+            currUserRef.update({
+                invitations: invitations,
+                schedule: firebase.firestore.FieldValue.arrayUnion(event)
+            });
+
+            //update attendance status on the original event for the current user
+
+
+            userRef.update({
+                schedule: userSchedule
+            });
+
+            window.location.href = '/#!/home';
+
+        }
+
+        $scope.decline = _ => {
+            currUserRef.update({
+                invitations: invitations
+            });
         }
 
         $scope.counterReq = _ => {
+            const timeConfig = {
+                altInput: true,
+                altFormat: "F j, Y h:i K",
+                enableTime: true,
+                dateFormat: "Z",
+            }
+            const dateStart = flatpickr("#StartDate", timeConfig);
+            const dateEnd = flatpickr("#EndDate", timeConfig);
+            document.getElementById("modal").style.display = "block";
+        }
 
+        $scope.counterSubmit = _ => {
+            const startDate = firebase.firestore.Timestamp.fromDate(new Date($scope.dateS));
+            const endDate = firebase.firestore.Timestamp.fromDate(new Date($scope.dateE));
+            const counterReq = {
+                startTime: startDate,
+                endTime: endDate,
+                id: genID()
+            };
+
+            db.collection('Users').doc($routeParams.userId).collection("requests").doc($routeParams.eventID).update({
+                pending: firebase.firestore.FieldValue.arrayUnion(counterReq)
+            });
+
+            currUserRef.update({
+                invitations: invitations
+            });
+        }
+
+        $scope.ModalCloseFunc = _ => {
+            document.getElementById("modal").style.display = "none";
         }
 
     } else {
@@ -363,10 +434,13 @@ app.controller('eventController', function ($scope, $routeParams) {
     if (firebase.auth().currentUser != null) {
         const userID = firebase.auth().currentUser.uid;
         const userRef = db.collection('Users').doc($routeParams.userId);
-        let userData = null;
-        let event = null;
+        const requestsRef = db.collection('Users').doc($routeParams.userId).collection("requests").doc($routeParams.eventID);
+        let userData;
+        let event;
+        let eventRequests;
+
         userRef.get().then(function (doc) {
-            userData = doc.data()
+            userData = doc.data();
             $scope.loadEvent(doc.data());
         });
 
@@ -382,10 +456,23 @@ app.controller('eventController', function ($scope, $routeParams) {
             });
             $scope.event = event;
             $scope.list = confirmedAtt;
+            $scope.requests = eventRequests;
+            console.log(userID);
+            console.log($routeParams.userId);
+            console.log(userData.username);
+            console.log(event.e_Master);
+            if (userData.username == event.e_Master && userID == $routeParams.userId) {
+                $scope.creatorOptions();
+            }
             $scope.$apply();
         };
 
-        if (userID == $routeParams.userId) {
+        $scope.creatorOptions = _ => {
+            console.log("For some reason this is running")
+            document.getElementById("creatorOptions").style.display = "block";
+            requestsRef.get().then(function (doc) {
+                eventRequests = doc.data().pending;
+            })
             $scope.editEvent = _ => {
                 window.location.href = `/#!/editEvent/${userID}/${$routeParams.eventID}`;
             };
@@ -406,10 +493,68 @@ app.controller('eventController', function ($scope, $routeParams) {
                 });
                 window.location.href = '/#!/home';
             };
-        } else {
-            document.getElementById("creatorOptions").style.display = "none";
-        }
 
+            $scope.viewReq = _ => {
+                eventRequests.forEach(element => {
+                    element.startTime = element.startTime.toDate().toUTCString();
+                    element.endTime = element.endTime.toDate().toUTCString();
+                });
+                document.getElementById("modal").style.display = "block";
+            }
+
+            $scope.acceptReq = index => {
+                let startTimestamp = firebase.firestore.Timestamp.fromDate(new Date(eventRequests[index].startTime));
+                let endTimestamp = firebase.firestore.Timestamp.fromDate(new Date(eventRequests[index].endTime));
+                event.e_Start_Time = startTimestamp;
+                event.e_End_Time = endTimestamp;
+                const invitationEvent = {
+                    eventTitle: event.e_Name,
+                    eventMaster: event.e_Master,
+                    masterID: userID,
+                    eventDesc: event.e_Description,
+                    eventLocation: event.e_Location,
+                    eventId: event.id,
+                    eventStart: event.e_Start_Time,
+                    eventEnd: event.e_End_Time
+                };
+                event.attendees.forEach(user => {
+                    if (!user.hasAccepted) {
+                        db.collection('Users').doc(user.userID).get().then(function (doc) {
+                            const resp = doc.data()
+                            for (let i = 0; i < resp.invitations.length; i++) {
+                                if (resp.invitations[i].eventId == event.id) {
+                                    resp.invitations.splice(i, 1);
+                                }
+                            };
+                            console.log(invitationEvent);
+                            db.collection('Users').doc(user.userID).update({
+                                invitations: firebase.firestore.FieldValue.arrayUnion(invitationEvent)
+                            });
+                        });
+                    };
+                });
+
+                for (let i = 0; i < userData.schedule.length; i++) {
+                    if (userData.schedule[i].id == event.id) {
+                        userData.schedule[i] = event;
+                    }
+                }
+
+                userRef.update({
+                    schedule: userData.schedule
+                })
+
+                console.log("Somehow that all worked");
+            }
+
+            $scope.declineReq = index => {
+                eventRequests.splice(index, 1)
+            }
+
+            $scope.ModalCloseFunc = _ => {
+                document.getElementById("modal").style.display = "none";
+            }
+        }
     } else {
         window.location.href = '/#!/';
     }
@@ -464,8 +609,6 @@ app.controller('createEventController', function ($scope) {
                 eventId: event.id,
                 eventStart: event.e_Start_Time,
                 eventEnd: event.e_End_Time
-
-
             };
 
             event.attendees.forEach(user => {
@@ -695,18 +838,20 @@ app.controller('friendsController', function ($scope) {
 app.controller('friendScheduleController', function ($scope, $routeParams) {
     if (firebase.auth().currentUser != null) {
         const userRef = db.collection('Users').doc($routeParams.id);
+        let schedule = [];
         userRef.get().then(function (doc) {
             $scope.loadSchedule(doc.data());
         });
 
         $scope.loadSchedule = userData => {
             $scope.user = userData;
-            $scope.events = userData.schedule;
+            schedule = userData.schedule;
+            $scope.events = schedule;
             $scope.$apply();
         };
 
         $scope.viewEvent = index => {
-            window.location.href = `/#!/viewEvent/${$routeParams.id}/${index}`;
+            window.location.href = `/#!/viewEvent/${$routeParams.id}/${schedule[index].id}`;
         }
     } else {
         window.location.href = '/#!/';
@@ -771,12 +916,17 @@ app.controller('addFriendController', function ($scope) {
 
         $scope.addFriend = _ => {
             let alreadyPending = false;
+            let alreadyFriends = false
 
             currUser[1].pendingFriends.forEach(penFriend => {
                 if (penFriend.username == friend.username) {
                     alreadyPending = true;
                 }
             });
+            userData.friends.forEach(freind => {
+                if
+            });
+
 
             if (alreadyPending == false) {
                 userRef.update({
@@ -794,7 +944,9 @@ app.controller('addFriendController', function ($scope) {
                 db.collection('Users').doc(friend.id).update({
                     friendRequests: firebase.firestore.FieldValue.arrayUnion(currentUser)
                 });
-            };
+            } else if (alreadyFriends == true) {
+                notie.alert({ type: 3, text: 'This user is already your friend' });
+            }
             $scope.reset();
             notie.alert({ type: 1, text: 'Friend request sent!' });
         }

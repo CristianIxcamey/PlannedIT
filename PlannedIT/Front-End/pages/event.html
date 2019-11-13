@@ -18,5 +18,30 @@
     <section id="creatorOptions">
         <div class="buttons" ng-click="editEvent()">Edit Event</div>
         <div class="buttons" ng-click="deleteEvent()">Delete Event</div>
+        <div class="buttons" ng-click="viewReq()">View Incoming Request</div>
+        <div id="modal">
+            <div id="modalCont">
+                <div class="ModalH">
+                    <span class="Close" ng-click="ModalCloseFunc()">&times;</span>
+                    <h2>Here are your current request</h2>
+                </div>
+                <div class="ModalB">
+                    <h2 ng-show="!requests.length">No requests</h2>
+                    <section ng-repeat="x in requests" class="requests">
+                        <div class="request">
+                            <h2>{{x.requestor}}</h2>
+                            <section>
+                                <p>Start: {{x.startTime}}</p>
+                                <p>End: {{x.endTime}}</p>
+                            </section>
+                            <section>
+                                <div class="buttons" ng-click="acceptReq($index)">Accept</div>
+                                <div class="buttons" ng-click="declineReq($index)">Decline</div>
+                            </section>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
     </section>
 </section>

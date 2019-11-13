@@ -22,4 +22,17 @@
         <div class="buttons" ng-click="decline()">Decline Invite</div>
         <div class="buttons" ng-click="counterReq()">Send Counter Request</div>
     </section>
+    <div id="modal">
+        <div id="modalCont">
+            <div class="ModalH">
+                <span class="Close" ng-click="ModalCloseFunc()">&times;</span>
+                <h2>Select a new Start and End time</h2>
+            </div>
+            <div class="ModalB">
+                <input id="StartDate" type=text" ng-model="dateS" placeholder="Date Start">
+                <input id="EndDate" type=text" ng-model="dateE" placeholder="Date End">
+                <div class="buttons" ng-click="counterSubmit()">Send Counter Request</div>
+            </div>
+        </div>
+    </div>
 </section>
