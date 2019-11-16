@@ -3,12 +3,14 @@
     <h1>{{event.e_Master}}</h1>
     <h3>{{event.e_Description}}</h3>
     <h2>{{event.e_Location}}</h2>
-    <h2>Who's going to be there?</h2>
-    <section id="addedAttendeeSection">
-        <section ng-repeat="x in list" class="AttendeeRepeat">
-            <div class="attendee">
-                <h2>{{x}}</h2>
-            </div>
+    <section id="attendeesSection">
+        <h2>Who's going to be there?</h2>
+        <section id="addedAttendeeSection">
+            <section ng-repeat="x in list" class="AttendeeRepeat">
+                <div class="attendee">
+                    <h2>{{x}}</h2>
+                </div>
+            </section>
         </section>
     </section>
     <section>

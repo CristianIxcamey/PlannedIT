@@ -1,19 +1,24 @@
 html {
     width: 100%;
     height: 100%;
-    background-color: #070B16;
+    background-color: #FFF;
 }
 
 /* nav section */
 
 header {
-    padding-top: 3%;
+    padding: 3%;
     height: 10%;
 }
 
 nav {
     display: flex;
     padding: 0% 7%;
+    background-color: #32c649;
+    border-radius: 10px;
+    color: #3b3c4b;
+    max-height: 60px;
+    min-height: 60px;
 }
 
 #menuContent {
@@ -39,17 +44,13 @@ nav {
 }
 
 #menuContent li a:visited {
-    color: #F2F2F2;
+    color: #3b3c4b;
     text-decoration: none;
 }
 
 #menuContent li a:hover {
-    background-color: #E0A214;
-    font-size: 25px;
-    padding: 5%;
-    color: black;
-    font-weight: bold;
-    border-radius: 6px;
+    font-size: 30px;
+    color: #000;
 }
 
 #menuIcon {
@@ -73,11 +74,11 @@ nav {
 }
 
 body {
-    margin: 0% 10%;
-    width: 80%;
-    height: 100%;
-    background-color: #1C2C40;
-    color: #FFFFFF
+    margin: 0% 0%;
+    width: 100%;
+    min-height: 100%;
+    color: #F5F6Fa;
+    background-color: #3b3c4b;
 }
 
 h1 {
@@ -94,33 +95,110 @@ h3 {
     font-size: 20px;
 }
 
+#application {
+    display: none;
+}
+
 /* Loading page */
 
+/* 
 #loadingSection {
     width: 100%;
     height: 100%;
     background-color: brown;
     z-index: 1;
+} */
+
+#loadingSection {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#loadingSection h3 {
+    margin-top: 0%;
+}
+
+#loader {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    animation: loader 2s infinite ease;
+}
+
+#loadingAnim {
+    vertical-align: top;
+    display: inline-block;
+    width: 100%;
+    background-color: #32c649;
+    animation: loader-inner 2s infinite ease-in;
+}
+
+@keyframes loader {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(180deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    75% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loader-inner {
+    0% {
+        height: 0%;
+    }
+    25% {
+        height: 0%;
+    }
+    50% {
+        height: 100%;
+    }
+    75% {
+        height: 100%;
+    }
+    100% {
+        height: 0%;
+    }
 }
 
 /* Standard buttons style */
 
 .buttons {
     text-align: center;
-    width: 162px;
+    font-size: x-large;
+    font-weight: bold;
+    min-width: 165px;
+    max-width: 300px;
     display: block;
     transition: .5s;
-    padding: 15px;
+    padding: 10px;
     border-radius: 10px;
     border: 1px solid #282828;
-    color: #282828;
-    background-color: #E0A214;
-    margin: 60px auto;
+    background-color: #d797c9;
+    margin: auto;
+    flex: 1;
+    max-height: 40px;
 }
 
 .buttons:hover {
-    background-color: #F2E205;
-    box-shadow: 4px 6px #F2F2F2;
+    box-shadow: 4px 5px 5px black;
     cursor: pointer;
 }
 
@@ -137,12 +215,119 @@ h3 {
     flex-direction: row;
 }
 
+/* Home Page */
+
+#greeting {
+    font-size: 60px;
+}
+
+#scheduleDisplaySection {
+    padding: 2% 5%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#scheduleDisplaySection #scheduleEvent {
+    flex: 1;
+    min-width: 25%;
+}
+
+.event {
+    margin: 0% 10%;
+    background-color: #32C649;
+    border-radius: 10px;
+    padding: 2px;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    transition: .5s;
+}
+
+.event:hover {
+    cursor: pointer;
+    box-shadow: 4px 5px 5px black;
+}
+
+.event h1 {
+    margin: auto;
+    color: #3b3c4b;
+}
+
+#homeOptions {
+    padding: 3%;
+    display: flex;
+}
+
+/* Profile */
+
+.user {
+    display: flex;
+    padding: 1% 5%;
+}
+
+.userInfoSection .user img {
+    width: 30%;
+    border-radius: 50px;
+}
+
+.userInfo {
+    flex: .5;
+    display: flex;
+    flex-direction: column;
+}
+
+.userInfo h1 {
+    flex: 1;
+    text-align: left;
+    margin: 0% 5%;
+}
+
+.userInfo h3 {
+    flex: .5;
+    text-align: left;
+    margin: 0% 5%;
+}
+
+/* Friends */
+
+.friendOptions {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.userInfo h2 {
+    text-align: left;
+    margin: 7% 10%;
+}
+
+#searchButtonSec {
+    padding: 5%;
+}
+
 /* Event Pages */
 
 .element {
     margin: 3%;
     padding: 3%;
     background-color: cadetblue;
+}
+
+#attendeesSection {
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    text-align: center;
+    margin: auto;
+}
+
+#addedAttendeeSection {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
 }
 
 .attendee {
@@ -206,15 +391,6 @@ h3 {
 
 .AttendeeRepeat {
     margin: 2%;
-}
-
-.userInfoSection {
-    margin: 2% 10%;
-}
-
-.userInfoSection .user img {
-    width: 25%;
-    border-radius: 50px;
 }
 
 /*invite Section*/

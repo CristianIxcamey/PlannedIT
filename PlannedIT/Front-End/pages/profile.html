@@ -1,8 +1,10 @@
 <section class="userInfoSection">
     <section class="user">
-        <h1>{{user.username}}'s profile page</h1>
         <img ng-src="{{user.profileImage}}" />
-        <h3>{{user.name}}</h3>
-        <h3>{{user.email}}</h3>
+        <section class="userInfo">
+            <h1>Username: {{user.username}}</h1>
+            <h3>Name: {{user.name}}</h3>
+            <h3>Email: {{user.email}}</h3>
+        </section>
     </section>
 </section>

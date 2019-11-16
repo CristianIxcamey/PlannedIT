@@ -6,7 +6,7 @@
             Here's your schedule for today!
         </h3>
         <section id="scheduleDisplaySection">
-            <section ng-repeat="x in events">
+            <section id="scheduleEvent" ng-repeat="x in events">
                 <section class="event" ng-click='viewEvent($index)'>
                     <h1>{{x.e_Name}}</h1>
                 </section>
@@ -14,10 +14,12 @@
         </section>
 
     </section>
-    <div class="buttons" ng-click="createEvent()">
-        Create Event
-    </div>
-    <div class="buttons" ng-click="singOut()">
-        Sign Out
-    </div>
+    <section id="homeOptions">
+        <div class="buttons" ng-click="createEvent()">
+            Create Event
+        </div>
+        <div class="buttons" ng-click="singOut()">
+            Sign Out
+        </div>
+    </section>
 </section>

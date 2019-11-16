@@ -18,7 +18,10 @@
 
 <body>
     <div id="loadingSection">
-        <h1>LOADING</h1>
+        <h3>Loading</h3>
+        <div id="loader">
+            <span id="loadingAnim"></span>
+        </div>
     </div>
     <header>
         <nav>
@@ -59,7 +62,7 @@
             </ul>
         </nav>
     </header>
-    <section ng-app="PlannedIT" class="Content-full">
+    <section ng-app="PlannedIT" id="application">
         <section ng-controller="mainController" class="Content-full">
             <div ng-view>
 
