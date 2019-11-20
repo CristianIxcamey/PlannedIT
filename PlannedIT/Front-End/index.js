@@ -529,6 +529,8 @@ app.controller('eventController', function ($scope, $routeParams, $interval) {
                         element.startTime = element.startTime.toDate().toUTCString();
                         element.endTime = element.endTime.toDate().toUTCString();
                     });
+                    console.log(eventRequests);
+                    $scope.requests = eventRequests;
                     document.getElementById("modal").style.display = "block";
                 }
 
@@ -682,6 +684,15 @@ app.controller('createEventController', function ($scope, $interval) {
                 });
 
             }
+
+            const timeConfig = {
+                altInput: true,
+                altFormat: "F j, Y h:i K",
+                enableTime: true,
+                dateFormat: "Z",
+            }
+            const dateStart = flatpickr("#StartDate", timeConfig);
+            const dateEnd = flatpickr("#EndDate", timeConfig);
 
             isloading(true);
             $interval.cancel(loadingInterval);
@@ -996,13 +1007,15 @@ app.controller('addFriendController', function ($scope, $interval) {
                     }
                 });
                 userFriends.forEach(doc => {
+                    console.log(doc);
+                    console.log(friend);
                     if (doc.username == friend.username) {
                         alreadyFriends = true;
                     }
                 });
 
 
-                if (alreadyPending == false) {
+                if (alreadyPending == false && alreadyFriends == false) {
                     userRef.update({
                         pendingFriends: firebase.firestore.FieldValue.arrayUnion(friend)
                     });
@@ -1052,6 +1065,7 @@ app.controller('addFriendController', function ($scope, $interval) {
 // };
 
 //Additional Functions
+
 function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     return datum;
@@ -1108,6 +1122,13 @@ const isloading = isloading => {
         loadingSection.style.display = "flex";
         appSection.style.display = "none";
     }
+}
+
+const googleCalendarEvent = (event) => {
+    event.start = event.start.toDate.toISOString();
+    event.end = event.end.toDate.toISOString();
+    console.log(event.start);
+    console.log(event.end);
 }
 
 menuIcon.addEventListener('click', menuFunction);
