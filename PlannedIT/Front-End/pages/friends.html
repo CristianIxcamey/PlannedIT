@@ -16,15 +16,22 @@
         </section>
     </section>
 
-    <h1>Friend Requests</h1>
+    <h1 ng-show="!friendRequests.length">You have no friends :( </h1>
+    <h1 ng-show="friendRequests.length">Friend Requests</h1>
     <section ng-repeat="x in friendRequests" class="userInfoSection">
-        <div class="user">
-            <img ng-src="{{x.img}}" />
-            <h2>username: {{x.username}}</h2>
-            <h2>Emial: {{x.email}}</h2>
-        </div>
-        <div class="buttons" ng-click="addFriend($index)">Accept Request</div>
-        <div class="buttons" ng-click="declineFriend($index)">Decline Request</div>
+        <section class="userInfoSection">
+            <div class="user">
+                <img ng-src="{{x.img}}" />
+                <section class="userInfo">
+                    <h2>username: {{x.username}}</h2>
+                    <h2>Emial: {{x.email}}</h2>
+                </section>
+                <section class="friendOptions">
+                    <div class="buttons" ng-click="addFriend($index)">Accept Request</div>
+                    <div class="buttons" ng-click="declineFriend($index)">Decline Request</div>
+                </section>
+            </div>
+        </section>
     </section>
     <section id="searchButtonSec">
         <div class="buttons" ng-click="searchFriends()">Search for and add Friend</div>

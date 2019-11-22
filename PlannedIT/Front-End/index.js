@@ -10,6 +10,12 @@ var db = firebase.firestore();
 const menuIcon = document.getElementById("menuIcon");
 const loadingSection = document.getElementById("loadingSection");
 const appSection = document.getElementById("application");
+const googleCalendarCredentials = {
+    apiKey: 'AIzaSyAGSka3Fko8L5zDhYwujTlb0KbIDD-ohec',
+    clientId: '335758049131-3ig38tgsdar335913ofuvui9rja1dcnb.apps.googleusercontent.com',
+    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
+    scope: "https://www.googleapis.com/auth/calendar"
+}
 
 //AngularJS
 let app = angular.module('PlannedIT', ['ngRoute']);
@@ -225,6 +231,7 @@ app.controller('profileController', function ($scope, $interval) {
     let loadingCount = 0;
     let loadingInterval = $interval(function () {
         if (firebase.auth().currentUser != null) {
+
             const user = firebase.auth().currentUser;
             const docref = db.collection('Users').doc(user.uid);
             docref.get().then(function (doc) {
@@ -235,6 +242,27 @@ app.controller('profileController', function ($scope, $interval) {
                 isloading(true);
                 $scope.user = userData;
                 $scope.$apply();
+            }
+
+            initClient();
+
+            $scope.googleSignIn = _ => {
+                gapi.auth2.getAuthInstance().signIn().then(_ => {
+                    $scope.user.allowGAPI = true;
+                    docref.update({
+                        allowGAPI: true
+                    });
+                    notie.alert({ type: 1, text: "Google Calendar Enabled" })
+                });
+            }
+
+            $scope.googleSignOut = _ => {
+                gapi.auth2.getAuthInstance().signOut();
+                $scope.user.allowGAPI = false;
+                docref.update({
+                    allowGAPI: false
+                });
+                notie.alert({ type: 3, text: "Google Calendar Disabled" })
             }
 
             $interval.cancel(loadingInterval);
@@ -607,9 +635,14 @@ app.controller('createEventController', function ($scope, $interval) {
             var docRef = db.collection("Users").doc(user.uid);
             docRef.get().then(function (doc) {
                 userData = doc.data();
+                if (userData.allowGAPI) {
+                    initClient();
+                }
             });
 
+            //Creating the event section
             $scope.Submit = _ => {
+                // Making the final users that will be added to the attendents list
                 let finalAttendees = [];
                 $scope.list.forEach(element => {
                     finalAttendees.push(element);
@@ -624,6 +657,7 @@ app.controller('createEventController', function ($scope, $interval) {
                     });
                 }
 
+                // Making a dummy event to send to firebase
                 let event = {
                     id: genID(),
                     attendees: finalAttendees,
@@ -631,9 +665,41 @@ app.controller('createEventController', function ($scope, $interval) {
                     e_Master: userData.username,
                     e_Description: $scope.eventDescription,
                     e_Location: $scope.eventAddress,
-                    e_Start_Time: $scope.dateS,
-                    e_End_Time: $scope.dateE
+                    e_Start_Time: firebase.firestore.Timestamp.fromDate(new Date($scope.dateS)),
+                    e_End_Time: firebase.firestore.Timestamp.fromDate(new Date($scope.dateE))
                 }
+
+                if (userData.allowGAPI) {
+                    let googleEvent = {
+                        'summary': event.e_Name,
+                        'location': event.e_Location,
+                        'description': event.e_Description,
+                        'start': {
+                            'dateTime': new Date($scope.dateS).toISOString(),
+                            'timeZone': 'America/Denver'
+                        },
+                        'end': {
+                            'dateTime': new Date($scope.dateE).toISOString(),
+                            'timeZone': 'America/Denver'
+                        },
+                        'recurrence': [
+                            'RRULE:FREQ=DAILY;COUNT=1'
+                        ],
+                        'attendees': [
+                            {}
+                        ],
+                        'reminders': {
+                            'useDefault': false,
+                            'overrides': [
+                                { 'method': 'email', 'minutes': 24 * 60 },
+                                { 'method': 'popup', 'minutes': 40 }
+                            ]
+                        }
+                    };
+                    googleCalendarEvent(googleEvent);
+                    console.log("this is running")
+                }
+
 
                 docRef.update({
                     schedule: firebase.firestore.FieldValue.arrayUnion(event)
@@ -665,6 +731,7 @@ app.controller('createEventController', function ($scope, $interval) {
 
             $scope.list = [];
 
+            // Adding friends to event section
             $scope.userAdd = _ => {
                 $scope.list.push({
                     "name": $scope.addedAttendee,
@@ -673,7 +740,7 @@ app.controller('createEventController', function ($scope, $interval) {
                 });
                 $scope.addedAttendee = "";
             }
-
+            // Removeing friends from event
             $scope.remove = index => {
                 let newUserList = $scope.list;
                 $scope.list = [];
@@ -685,6 +752,7 @@ app.controller('createEventController', function ($scope, $interval) {
 
             }
 
+            //Loading screen section
             const timeConfig = {
                 altInput: true,
                 altFormat: "F j, Y h:i K",
@@ -1124,11 +1192,34 @@ const isloading = isloading => {
     }
 }
 
-const googleCalendarEvent = (event) => {
-    event.start = event.start.toDate.toISOString();
-    event.end = event.end.toDate.toISOString();
-    console.log(event.start);
-    console.log(event.end);
+const googleCalendarEvent = event => {
+    gapi.client.calendar.events.insert({
+        'calendarId': 'primary',
+        'resource': event
+    });
 }
+const initClient = _ => {
+    gapi.load('client', _ => {
+        gapi.client.init(googleCalendarCredentials).then(_ => {
+            gapi.auth2.getAuthInstance().isSignedIn.get()
+        });
+        gapi.client.load('calendar', 'v3');
+    }, error => {
+        console.log(JSON.stringify(error, null, 2));
+    });
+}
+
+
+// const updateSigninStatus = isSignedIn => {
+//     if (isSignedIn) {
+//         authorizeButton.style.display = 'none';
+//         signoutButton.style.display = 'block';
+//         listUpcomingEvents();
+//     } else {
+//         authorizeButton.style.display = 'block';
+//         signoutButton.style.display = 'none';
+//     }
+// }
+
 
 menuIcon.addEventListener('click', menuFunction);

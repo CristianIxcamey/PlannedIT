@@ -6,5 +6,7 @@
             <h3>Name: {{user.name}}</h3>
             <h3>Email: {{user.email}}</h3>
         </section>
+        <div ng-show="!user.allowGAPI" class="buttons" ng-click="googleSignIn()">Activate google calendar</div>
+        <div ng-show="user.allowGAPI" class="buttons" ng-click="googleSignOut()">Deactivate google calendar</div>
     </section>
 </section>

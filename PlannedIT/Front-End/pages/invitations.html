@@ -1,4 +1,5 @@
 <section>
+    <h1 ng-show="!invitations.length">No Invitations</h1>
     <section ng-repeat="x in invitations">
         <section ng-click="eventOptions($index)" class="invitations">
             <h1 class="eventTitle">{{x.eventTitle}}</h1>
