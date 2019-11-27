@@ -192,14 +192,16 @@ app.controller('homeController', function ($scope) {
         let docref = db.collection('Users').doc(user.uid)
         docref.get().then(function (doc) {
             data = doc.data();
-            $scope.fn1();
+            $scope.load();
         });
 
-        $scope.fn1 = _ => {
+        $scope.load = _ => {
             document.getElementById("greeting").innerHTML = `Welcome back ${data.name}`;
             isloading(true);
             $scope.events = data.schedule;
-
+            $scope.events.forEach(event => {
+                event.e_Start_Time = event.e_Start_Time.toDate().toLocaleDateString('en-us', { dateStyle: "medium", timeStyle: "medium" });
+            });
             $scope.$apply();
         };
 
@@ -506,6 +508,7 @@ app.controller('eventController', function ($scope, $routeParams, $interval) {
 
             $scope.loadEvent = userData => {
                 event = getEvent(userData.schedule, $routeParams.eventID);
+                $scope.prepareMap(event.e_Location);
                 event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
                 event.e_End_Time = event.e_End_Time.toDate().toUTCString();
                 const confirmedAtt = [];
@@ -523,6 +526,22 @@ app.controller('eventController', function ($scope, $routeParams, $interval) {
                 $scope.$apply();
                 isloading(true);
             };
+
+            $scope.prepareMap = address => {
+                address = address.replace(/ /g, "+");
+                console.log(address);
+                let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}r&key=AIzaSyB8ycuAihiIlZOSaDa9hsamowjFvNIPI9s`;
+                console.log(url);
+                fetch(url, {
+                })
+                    .then(response => {
+                        response.json().then(result => {
+                            let longLat = result.results[0].geometry.location;
+                            console.log(longLat);
+                            $scope.generateMap(longLat);
+                        });
+                    });
+            }
 
             $scope.creatorOptions = _ => {
                 document.getElementById("creatorOptions").style.display = "block";
@@ -615,6 +634,19 @@ app.controller('eventController', function ($scope, $routeParams, $interval) {
                     document.getElementById("modal").style.display = "none";
                 }
             }
+
+            $scope.generateMap = longLat => {
+                let map = new google.maps.Map(document.getElementById('map'), {
+                    center: longLat,
+                    zoom: 18,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                });
+                let mark = new google.maps.Marker({ position: longLat, title: "Address", visible: true });
+                mark.setMap(map);
+            }
+
+            // Maps API Key AIzaSyB8ycuAihiIlZOSaDa9hsamowjFvNIPI9s
+
             $interval.cancel(loadingInterval);
         } else if (loadingCount == 5) {
             window.location.href = '/#!/';
@@ -635,9 +667,6 @@ app.controller('createEventController', function ($scope, $interval) {
             var docRef = db.collection("Users").doc(user.uid);
             docRef.get().then(function (doc) {
                 userData = doc.data();
-                if (userData.allowGAPI) {
-                    initClient();
-                }
             });
 
             //Creating the event section
@@ -657,7 +686,6 @@ app.controller('createEventController', function ($scope, $interval) {
                     });
                 }
 
-                // Making a dummy event to send to firebase
                 let event = {
                     id: genID(),
                     attendees: finalAttendees,
@@ -668,42 +696,6 @@ app.controller('createEventController', function ($scope, $interval) {
                     e_Start_Time: firebase.firestore.Timestamp.fromDate(new Date($scope.dateS)),
                     e_End_Time: firebase.firestore.Timestamp.fromDate(new Date($scope.dateE))
                 }
-
-                if (userData.allowGAPI) {
-                    let googleEvent = {
-                        'summary': event.e_Name,
-                        'location': event.e_Location,
-                        'description': event.e_Description,
-                        'start': {
-                            'dateTime': new Date($scope.dateS).toISOString(),
-                            'timeZone': 'America/Denver'
-                        },
-                        'end': {
-                            'dateTime': new Date($scope.dateE).toISOString(),
-                            'timeZone': 'America/Denver'
-                        },
-                        'recurrence': [
-                            'RRULE:FREQ=DAILY;COUNT=1'
-                        ],
-                        'attendees': [
-                            {}
-                        ],
-                        'reminders': {
-                            'useDefault': false,
-                            'overrides': [
-                                { 'method': 'email', 'minutes': 24 * 60 },
-                                { 'method': 'popup', 'minutes': 40 }
-                            ]
-                        }
-                    };
-                    googleCalendarEvent(googleEvent);
-                    console.log("this is running")
-                }
-
-
-                docRef.update({
-                    schedule: firebase.firestore.FieldValue.arrayUnion(event)
-                });
 
                 const invitationEvent = {
                     eventTitle: event.e_Name,
@@ -726,7 +718,13 @@ app.controller('createEventController', function ($scope, $interval) {
                     });
                 });
 
-                window.location.href = '/#!/home';
+
+
+                docRef.update({
+                    schedule: firebase.firestore.FieldValue.arrayUnion(event)
+                }).then(_ => {
+                    window.location.href = '/#!/home';
+                })
             };
 
             $scope.list = [];
@@ -1124,16 +1122,6 @@ app.controller('addFriendController', function ($scope, $interval) {
     }, 1000);
 });
 
-// Dragula
-// const Create_Event_Section = document.getElementById("eventCreationSection");
-// const Schedule_Section = document.getElementById("scheduleSection");
-
-// dragula([Create_Event_Section, Schedule_Section]), {
-//     revertOnSpill: true
-// };
-
-//Additional Functions
-
 function toTimestamp(year, month, day, hour, minute, second) {
     var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
     return datum;
@@ -1191,35 +1179,5 @@ const isloading = isloading => {
         appSection.style.display = "none";
     }
 }
-
-const googleCalendarEvent = event => {
-    gapi.client.calendar.events.insert({
-        'calendarId': 'primary',
-        'resource': event
-    });
-}
-const initClient = _ => {
-    gapi.load('client', _ => {
-        gapi.client.init(googleCalendarCredentials).then(_ => {
-            gapi.auth2.getAuthInstance().isSignedIn.get()
-        });
-        gapi.client.load('calendar', 'v3');
-    }, error => {
-        console.log(JSON.stringify(error, null, 2));
-    });
-}
-
-
-// const updateSigninStatus = isSignedIn => {
-//     if (isSignedIn) {
-//         authorizeButton.style.display = 'none';
-//         signoutButton.style.display = 'block';
-//         listUpcomingEvents();
-//     } else {
-//         authorizeButton.style.display = 'block';
-//         signoutButton.style.display = 'none';
-//     }
-// }
-
 
 menuIcon.addEventListener('click', menuFunction);

@@ -249,6 +249,13 @@ h3 {
 }
 
 .event h1 {
+    padding: 3%;
+    margin: auto;
+    color: #3b3c4b;
+}
+
+.event h3 {
+    padding: 3%;
     margin: auto;
     color: #3b3c4b;
 }
@@ -313,6 +320,12 @@ h3 {
     margin: 3%;
     padding: 3%;
     background-color: cadetblue;
+}
+
+#map {
+    width: 100%;
+    height: 400px;
+    background-color: grey;
 }
 
 #attendeesSection {
