@@ -509,12 +509,12 @@ app.controller('eventController', function ($scope, $routeParams, $interval) {
             $scope.loadEvent = userData => {
                 event = getEvent(userData.schedule, $routeParams.eventID);
                 $scope.prepareMap(event.e_Location);
-                event.e_Start_Time = event.e_Start_Time.toDate().toUTCString();
-                event.e_End_Time = event.e_End_Time.toDate().toUTCString();
+                event.e_Start_Time = event.e_Start_Time.toDate().toLocaleDateString('en-us', { dateStyle: "medium", timeStyle: "medium" });
+                event.e_End_Time = event.e_End_Time.toDate().toLocaleDateString('en-us', { dateStyle: "medium", timeStyle: "medium" });
                 const confirmedAtt = [];
                 event.attendees.forEach(element => {
                     if (element.hasAccepted) {
-                        confirmedAtt.push(element.name);
+                        confirmedAtt.push(element);
                     };
                 });
                 $scope.event = event;
@@ -544,7 +544,7 @@ app.controller('eventController', function ($scope, $routeParams, $interval) {
             }
 
             $scope.creatorOptions = _ => {
-                document.getElementById("creatorOptions").style.display = "block";
+                document.getElementById("creatorOptions").style.display = "flex";
                 requestsRef.get().then(function (doc) {
                     if (doc.data() != undefined) {
                         eventRequests = doc.data().pending;
@@ -672,7 +672,7 @@ app.controller('createEventController', function ($scope, $interval) {
             //Creating the event section
             $scope.Submit = _ => {
                 // Making the final users that will be added to the attendents list
-                let finalAttendees = [];
+                let finalAttendees = [{ name: userData.username, userID: null, hasAccepted: true, picture: userData.profileImage }];
                 $scope.list.forEach(element => {
                     finalAttendees.push(element);
                 });
@@ -682,6 +682,7 @@ app.controller('createEventController', function ($scope, $interval) {
                         if (finalAttendees[i].name == friend.username) {
                             finalAttendees[i].userID = friend.id;
                             finalAttendees[i].hasAccepted = false;
+                            finalAttendees[i].picture = friend.img;
                         };
                     });
                 }
@@ -734,7 +735,8 @@ app.controller('createEventController', function ($scope, $interval) {
                 $scope.list.push({
                     "name": $scope.addedAttendee,
                     "hasAccepted": true,
-                    "userID": ""
+                    "userID": null,
+                    "picture": ""
                 });
                 $scope.addedAttendee = "";
             }
@@ -791,7 +793,7 @@ app.controller('updateEventController', function ($scope, $routeParams, $interva
                     event = getEvent(userData.schedule, $routeParams.eventID);
                     $scope.list = [];
                     event.attendees.forEach(attendee => {
-                        $scope.list.push({ "user": attendee });
+                        $scope.list.push(attendee);
                     });
                     document.getElementById("subButton").innerHTML = "Update event";
                     $scope.eventName = event.e_Name;

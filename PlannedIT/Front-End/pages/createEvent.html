@@ -8,9 +8,17 @@
         <div class="buttons" ng-click="userAdd()">Add User to Event</div>
         <section id="addedAttendeeSection">
             <section ng-repeat="x in list" class="AttendeeRepeat">
-                <div class="attendee">
-                    <h2>{{x.name}}</h2>
-                    <div class="closeBtn" ng-click="remove($index)">&times;</div>
+                <div class="attendeeCard">
+                    <div class="attendee">
+                        <div class="attendeeFront">
+                            <img ng-src="{{x.picture}}">
+                        </div>
+                        <div class="attendeeBack">
+                            <h2>{{x.name}}</h2>
+                            <h3>Accepted: {{x.hasAccepted}}</h3>
+                            <div class="closeBtn" ng-click="remove($index)">&times;Remove</div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </section>

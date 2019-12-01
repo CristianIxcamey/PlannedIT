@@ -36,10 +36,10 @@ nav {
 
 #menuContent li a {
     display: block;
-    color: inherit;
-    font-size: 20px;
+    font-size: 25px;
+    font-family: 'Redressed', cursive;
     margin: 0% 2%;
-    transition: all .5s;
+    transition: all .3s cubic-bezier(0.71, 1.41, 0.71, 1.4);
     text-decoration: none;
 }
 
@@ -49,7 +49,8 @@ nav {
 }
 
 #menuContent li a:hover {
-    font-size: 30px;
+    font-size: 40px;
+    margin: -3% 1%;
     color: #000;
 }
 
@@ -322,10 +323,52 @@ h3 {
     background-color: cadetblue;
 }
 
+#eventDetailSection {
+    height: 500px;
+    width: 80%;
+    margin: 2% 10%;
+}
+
+#boxShadow {
+    width: auto;
+    height: inherit;
+    text-align: center;
+    font-family: 'Ropa Sans', sans-serif;
+    font-weight: 300;
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.6942752100840336) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+#eventName {
+    font-family: 'Kreon', serif;
+    font-size: 90px;
+    letter-spacing: 5px;
+    text-transform: capitalize;
+    padding-top: 5%;
+    font-weight: inherit;
+}
+
+#attendeesTitle {
+    margin: 2% 10%;
+    text-align: left;
+}
+
+#eventImage {
+    background-image: url("/Images/eventPageBkg.jpg");
+    background-repeat: no-repeat;
+    height: inherit;
+    border-radius: 15px;
+}
+
+#location {
+    margin: 0% 10%;
+}
+
 #map {
-    width: 100%;
-    height: 400px;
-    background-color: grey;
+    height: 600px;
+    width: 80%;
+    margin: 3% 10%;
+    margin-top: 1%;
+    border-radius: 15px;
 }
 
 #attendeesSection {
@@ -343,21 +386,52 @@ h3 {
     flex-direction: row;
 }
 
+.attendeeCard {
+    background-color: transparent;
+    width: 250px;
+    height: 250px;
+    perspective: 1000px;
+}
+
 .attendee {
-    display: flex;
-    flex-direction: row;
-    padding: 0 25px;
-    height: 50px;
-    font-size: 12px;
-    line-height: 50px;
-    border-radius: 25px;
-    background-color: #f1f1f1;
-    width: fit-content;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.attendeeCard:hover .attendee {
+    transform: rotateX(180deg);
+}
+
+.attendeeFront, .attendeeBack {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+}
+
+.attendeeFront img {
+    width: inherit;
+    max-height: 250px;
+    border-radius: 15px;
+}
+
+.attendeeBack {
+    background-color: #8088b4;
+    color: #F5F6Fa;
+    transform: rotateX(180deg);
+    border-radius: 15px;
 }
 
 .attendee h2 {
-    margin: 0% 2%;
-    color: #1C2C40;
+    /* margin: 0% 2%; */
+    font-size: 40px;
+    text-align: center;
 }
 
 .closeBtn {
@@ -376,6 +450,60 @@ h3 {
 
 #creatorOptions {
     display: none;
+    padding: 3%;
+}
+
+.optionImages {
+    text-align-last: center;
+    flex: 1;
+    min-height: 300px;
+}
+
+.optionImages img {
+    width: 30%;
+    transition: all .3s;
+    cursor: pointer;
+}
+
+.optionImages img:hover {
+    width: 38%;
+}
+
+.optionCon:hover h3 {
+    visibility: visible;
+    opacity: 1;
+}
+
+.optionCon h3 {
+    flex: 1;
+    visibility: hidden;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    width: fit-content;
+    margin: auto;
+    margin-bottom: 2%;
+    padding: 5px 10px;
+    font-size: larger;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#specialOption {
+    margin-bottom: 4%;
+}
+
+.optionCon h3::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
 }
 
 .request h2 {
@@ -476,8 +604,8 @@ h3 {
 
 #modal #modalCont .ModalH {
     padding: 25px 26px;
-    background-color: #91b410;
-    color: #F2F2F2;
+    background-color: #32c649;
+    color: #3b3c4b;
     border-radius: 10px;
     border: #FFF 5px solid;
     text-align: center;

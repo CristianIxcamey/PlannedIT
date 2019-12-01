@@ -1,27 +1,58 @@
 <section id="eventView">
-    <h1>{{event.e_Name}}</h1>
-    <h1>{{event.e_Master}}</h1>
-    <h3>{{event.e_Description}}</h3>
-    <h2>{{event.e_Location}}</h2>
+    <section id="eventDetailSection">
+        <div id="eventImage">
+            <div id="boxShadow">
+                <h1 id="eventName">{{event.e_Name}}</h1>
+                <h2 id="master">By {{event.e_Master}}</h2>
+                <h3 id="time">{{event.e_Start_Time}} - {{event.e_End_Time}}</h3>
+                <h3 id="description">{{event.e_Description}}</h3>
+            </div>
+        </div>
+    </section>
+    <h2 id="location">Location: {{event.e_Location}}</h2>
     <div id="map"></div>
+
+
     <section id="attendeesSection">
-        <h2>Who's going to be there?</h2>
+        <h2 id="attendeesTitle">Who will to be there</h2>
+        <h1 ng-show="!list.length">Just you for this event</h1>
         <section id="addedAttendeeSection">
             <section ng-repeat="x in list" class="AttendeeRepeat">
-                <div class="attendee">
-                    <h2>{{x}}</h2>
+                <div class="attendeeCard">
+                    <div class="attendee">
+                        <div class="attendeeFront">
+                            <img ng-src="{{x.picture}}">
+                        </div>
+                        <div class="attendeeBack">
+                            <h2>{{x.name}}</h2>
+                            <h3>Accepted: {{x.hasAccepted}}</h3>
+                        </div>
+                    </div>
                 </div>
             </section>
         </section>
     </section>
-    <section>
-        <h3>From {{event.e_Start_Time}}</h3>
-        <h3>To {{event.e_End_Time}}</h3>
-    </section>
+
+
     <section id="creatorOptions">
-        <div class="buttons" ng-click="editEvent()">Edit Event</div>
-        <div class="buttons" ng-click="deleteEvent()">Delete Event</div>
-        <div class="buttons" ng-click="viewReq()">View Incoming Request</div>
+        <div class="optionImages">
+            <div class="optionCon">
+                <h3>Edit Event</h3>
+                <img src="/Images/edit.png" ng-click="editEvent()">
+            </div>
+        </div>
+        <div class="optionImages">
+            <div class="optionCon">
+                <h3 id="specialOption">Delete Event</h3>
+                <img src="/Images/delete.png" ng-click="deleteEvent()">
+            </div>
+        </div>
+        <div class="optionImages">
+            <div class="optionCon">
+                <h3>View Requests</h3>
+                <img src="/Images/request.png" ng-click="viewReq()">
+            </div>
+        </div>
         <div id="modal">
             <div id="modalCont">
                 <div class="ModalH">
