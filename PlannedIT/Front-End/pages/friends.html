@@ -1,39 +1,57 @@
 <section>
-    <h1>Current Friends</h1>
-    <section ng-repeat="x in friends">
-        <section class="userInfoSection">
-            <div class="user">
-                <img ng-src="{{x.img}}" />
-                <section class="userInfo">
-                    <h2>{{x.username}}</h2>
-                    <h2>{{x.email}}</h2>
-                </section>
-                <section class="friendOptions">
-                    <div class="buttons" ng-click="deleteFriend($index)">Remove Friend</div>
-                    <div class="buttons" ng-click="viewSchedule($index)">View Schedule</div>
-                </section>
+    <section class="friendsDisplay">
+        <h1 ng-show="friends.length">Current Friends</h1>
+        <h1 ng-show="!friends.length">You have no friends :( </h1>
+        <section ng-repeat="x in friends">
+            <div class="friendCard">
+                <div class="friend">
+                    <div class="friendFront">
+                        <img ng-src="{{x.img}}">
+                    </div>
+                    <div class="friendBack">
+                        <h2 class="friendUsername">{{x.username}}</h2>
+                        <h2>{{x.email}}</h2>
+                        <div class="cardButtons" ng-click="deleteFriend($index)">
+                            <p>Remove Friend</p>
+                            <div class="buttonTextLine"></div>
+                        </div>
+                        <div class="cardButtons" ng-click="viewSchedule($index)">
+                            <p>View Schedule</p>
+                            <div class="buttonTextLine"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </section>
 
-    <h1 ng-show="!friendRequests.length">You have no friends :( </h1>
-    <h1 ng-show="friendRequests.length">Friend Requests</h1>
-    <section ng-repeat="x in friendRequests" class="userInfoSection">
-        <section class="userInfoSection">
-            <div class="user">
-                <img ng-src="{{x.img}}" />
-                <section class="userInfo">
-                    <h2>username: {{x.username}}</h2>
-                    <h2>Emial: {{x.email}}</h2>
-                </section>
-                <section class="friendOptions">
-                    <div class="buttons" ng-click="addFriend($index)">Accept Request</div>
-                    <div class="buttons" ng-click="declineFriend($index)">Decline Request</div>
-                </section>
+    <section class="friendsDisplay">
+        <h1 ng-show="friendRequests.length">Friend Requests</h1>
+        <h1 ng-show="!friendRequests.length">No one wants to be your friend :(</h1>
+        <section ng-repeat="x in friendRequests">
+            <div class="friendCard">
+                <div class="friend">
+                    <div class="friendFront">
+                        <img ng-src="{{x.img}}">
+                    </div>
+                    <div class="friendBack">
+                        <h2 class="friendUsername">{{x.username}}</h2>
+                        <h2>{{x.email}}</h2>
+                        <div class="cardButtons" ng-click="addFriend($index)">
+                            <p>Accept Request</p>
+                            <div class="buttonTextLine"></div>
+                        </div>
+                        <div class="cardButtons" ng-click="declineFriend($index)">
+                            <p>Decline Request</p>
+                            <div class="buttonTextLine"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </section>
+
     <section id="searchButtonSec">
-        <div class="buttons" ng-click="searchFriends()">Search for and add Friend</div>
+        <div class="buttons" ng-click="searchFriends()">Find Friends!</div>
     </section>
 </section>

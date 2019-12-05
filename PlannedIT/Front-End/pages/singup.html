@@ -1,8 +1,29 @@
 <div>
-    <input type="text" id="name" placeholder="Full Name" ng-model="user.name">
-    <input type="text" id="username" placeholder="Username" ng-model="user.username">
-    <input type="text" id="email" placeholder="Email" ng-model="user.email">
-    <input type="text" id="password" placeholder="Password" ng-model="user.password">
-    <div id="singUp" class="buttons" ng-click="createUser()">Sign up</div>
-    <div id="login" class="buttons" ng-click="login()">Log into an account</div>
+    <section class="logSingSection">
+        <h1>Sign up for Planned-It</h1>
+        <input type="text" id="name" placeholder="Full Name" ng-model="user.name">
+        <!-- <input type="text" id="username" placeholder="Username" ng-model="user.username"> -->
+        <input type="text" id="email" placeholder="Email" ng-model="user.email">
+        <input type="text" id="password" placeholder="Password" ng-model="user.password">
+        <section id="inputSection">
+            <div id="LoginLink">
+                <p>Already Have an account?</p>
+                <p ng-click="login()" id="logIn">Login!</p>
+            </div>
+        </section>
+    </section>
+    <section class="logSingSection">
+        <h1>Final Touches</h1>
+        <input type="text" id="username" placeholder="Username" ng-model="user.username">
+        <section id="imagePkr">
+            <input type="file" id="filePicker" name="pic" accept="image/*" onchange="setImage()">
+            <label for="filePicker" id="filePickerLabel">Select Picture</label>
+            <img src="/Images/userIcon2.png" id="singUpImage">
+        </section>
+    </section>
+    <section id="createEventOptions">
+        <div id="back" ng-click="lastStep()">&#8656;</div>
+        <div id="next" ng-click="nextStep()">&#8658;</div>
+        <div id="subButton" ng-click="createUser()">&#10004;</div>
+    </section>
 </div>

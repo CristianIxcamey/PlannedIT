@@ -1,6 +1,14 @@
 <div>
-    <input type="text" id="email" placeholder="Email">
-    <input type="text" id="password" placeholder="Password">
-    <div class="buttons" ng-click="login()" id="login">login</div>
-    <div class="buttons" ng-click="singup()" id="login">Make Account</div>
+    <section class="logSingSection">
+        <h1>Login to Planned-It</h1>
+        <input type="text" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <section id="inputSection">
+            <div id="login" ng-click="login()" id="login">Login</div>
+            <div id="signUpLink">
+                <p>Don't Have an account?</p>
+                <p ng-click="singup()" id="signUp">Make one!</p>
+            </div>
+        </section>
+        </seSction>
 </div>

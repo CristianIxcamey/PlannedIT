@@ -1,12 +1,12 @@
 <section class="userInfoSection">
     <section class="user">
+        <h1>Username: {{user.username}}</h1>
         <img ng-src="{{user.profileImage}}" />
         <section class="userInfo">
-            <h1>Username: {{user.username}}</h1>
             <h3>Name: {{user.name}}</h3>
             <h3>Email: {{user.email}}</h3>
         </section>
-        <div ng-show="!user.allowGAPI" class="buttons" ng-click="googleSignIn()">Activate google calendar</div>
-        <div ng-show="user.allowGAPI" class="buttons" ng-click="googleSignOut()">Deactivate google calendar</div>
+        <!-- <div ng-show="!user.allowGAPI" class="buttons" ng-click="googleSignIn()">Activate google calendar</div>
+        <div ng-show="user.allowGAPI" class="buttons" ng-click="googleSignOut()">Deactivate google calendar</div> -->
     </section>
 </section>

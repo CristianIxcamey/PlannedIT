@@ -37,7 +37,6 @@ nav {
 #menuContent li a {
     display: block;
     font-size: 25px;
-    font-family: 'Redressed', cursive;
     margin: 0% 2%;
     transition: all .3s cubic-bezier(0.71, 1.41, 0.71, 1.4);
     text-decoration: none;
@@ -183,24 +182,19 @@ h3 {
 
 .buttons {
     text-align: center;
-    font-size: x-large;
-    font-weight: bold;
-    min-width: 165px;
-    max-width: 300px;
-    display: block;
-    transition: .5s;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #282828;
-    background-color: #d797c9;
+    font-size: 30px;
+    text-transform: capitalize;
+    border-bottom: solid;
+    width: 35%;
+    height: 45px;
     margin: auto;
-    flex: 1;
-    max-height: 40px;
+    transition: all .5s;
 }
 
 .buttons:hover {
-    box-shadow: 4px 5px 5px black;
     cursor: pointer;
+    font-size: 38px;
+    width: 21%;
 }
 
 .buttons:active {
@@ -214,6 +208,132 @@ h3 {
     background-color: azure;
     display: flex;
     flex-direction: row;
+}
+
+/* Landing Page */
+
+#landingPageTitle {
+    font-size: 35px;
+}
+
+#userInputSection {
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+}
+
+/* Login Page */
+
+.logSingSection {
+    flex-direction: column;
+    padding: 5%;
+    width: 50%;
+    height: 400px;
+    margin: auto;
+    margin-top: -3%;
+    border-radius: 15px;
+    background-color: #32C649;
+    color: #3B3C4B;
+    display: flex;
+}
+
+.logSingSection input {
+    min-height: 10%;
+    margin: 5%;
+    padding: 0% 3%;
+    font-size: 20px;
+}
+
+#login {
+    text-align: center;
+    font-size: 30px;
+    text-transform: capitalize;
+    border-bottom: solid;
+    width: 30%;
+    height: 45px;
+    margin: auto;
+    transition: all .5s;
+}
+
+#login:hover {
+    cursor: pointer;
+    font-size: 38px;
+    width: 15%;
+}
+
+#signUpLink p {
+    text-align: end;
+    margin: unset;
+    flex: auto;
+}
+
+#signUpLink {
+    display: flex;
+    padding: 4%;
+}
+
+#signUpLink #signUp {
+    max-width: 100px;
+    text-align: center;
+    color: #303aa6;
+    transition: all .5s;
+}
+
+#signUpLink #signUp:hover {
+    cursor: pointer;
+    font-size: 20px;
+    color: #9462b0;
+}
+
+/* singup page */
+
+#LoginLink p {
+    text-align: end;
+    margin: unset;
+    flex: auto;
+}
+
+#LoginLink {
+    display: flex;
+    padding: 2%;
+}
+
+#LoginLink #logIn {
+    max-width: 100px;
+    text-align: center;
+    color: #303aa6;
+    transition: all .5s;
+}
+
+#LoginLink #logIn:hover {
+    cursor: pointer;
+    font-size: 20px;
+    color: #9462b0;
+}
+
+#imagePkr {
+    display: flex;
+    flex-direction: row;
+}
+
+#filePicker {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+#filePickerLabel {
+    flex: 1;
+}
+
+#singUpImage {
+    flex: 1;
+    width: 30%;
+    height: auto;
+    border-radius: 15px;
 }
 
 /* Home Page */
@@ -236,6 +356,7 @@ h3 {
 .event {
     margin: 0% 10%;
     background-color: #32C649;
+    color: #3B3C4B;
     border-radius: 10px;
     padding: 2px;
     justify-content: center;
@@ -264,24 +385,40 @@ h3 {
 #homeOptions {
     padding: 3%;
     display: flex;
+    flex-direction: column;
 }
 
 /* Profile */
 
 .user {
     display: flex;
+    flex-direction: column;
     padding: 1% 5%;
 }
 
-.userInfoSection .user img {
-    width: 30%;
-    border-radius: 50px;
+.userInfoSection {
+    display: block;
+    background-color: #32C649;
+    color: #3B3C4B;
+    width: 60%;
+    margin: auto;
+    height: 500px;
+    padding: 2%;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.userInfoSection img {
+    width: 300px;
+    border-radius: 15px;
+    margin: auto;
 }
 
 .userInfo {
     flex: .5;
     display: flex;
     flex-direction: column;
+    margin-bottom: 5%;
 }
 
 .userInfo h1 {
@@ -294,9 +431,107 @@ h3 {
     flex: .5;
     text-align: left;
     margin: 0% 5%;
+    text-align: center;
 }
 
 /* Friends */
+
+.friendsDisplay {
+    background-color: #32C649;
+    color: #3B3C4B;
+    width: 80%;
+    margin: 3% auto;
+    padding: 5%;
+    border-radius: 15px;
+}
+
+.friendCard {
+    background-color: transparent;
+    width: 250px;
+    height: 250px;
+    perspective: 1000px;
+    margin: auto;
+    margin-top: 2%;
+    vertical-align: middle;
+}
+
+.friend {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.friendCard:hover .friend {
+    transform: rotateX(180deg);
+}
+
+.friendFront, .friendBack {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+}
+
+.friendFront img {
+    width: inherit;
+    max-height: 250px;
+    border-radius: 15px;
+}
+
+.friendBack {
+    background-color: #8088b4;
+    color: #F5F6Fa;
+    transform: rotateX(180deg);
+    border-radius: 15px;
+}
+
+.friendUsername {
+    font-size: 35px;
+    margin: 5%;
+    margin-bottom: -5%;
+}
+
+.cardButtons {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    font-size: 24px;
+    text-transform: capitalize;
+    width: 90%;
+    height: 45px;
+    margin: auto;
+    transition: all .5s;
+}
+
+.cardButtons p {
+    font-size: 18px;
+    margin: 0%;
+    transition: all .3s;
+    padding-top: 5px;
+}
+
+.cardButtons p:hover {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.cardButtons p:hover+.buttonTextLine {
+    width: 30%;
+}
+
+.buttonTextLine {
+    height: 1px;
+    width: 90%;
+    margin: auto;
+    margin-top: 0%;
+    border-bottom: solid;
+    transition: all .3s;
+}
 
 .friendOptions {
     flex: 3;
@@ -313,6 +548,68 @@ h3 {
 
 #searchButtonSec {
     padding: 5%;
+}
+
+/* Friend Search */
+
+#searchSection {
+    width: 80%;
+    margin: auto;
+    margin-bottom: 3%;
+}
+
+/* Create event page */
+
+#attendeeTitle {
+    height: 30px;
+    margin: -1% auto;
+}
+
+.steps {
+    display: none;
+    flex-direction: column;
+    padding: 5%;
+    width: 50%;
+    height: 300px;
+    margin: auto;
+    border-radius: 15px;
+    background-color: #32C649;
+    color: #3B3C4B;
+}
+
+.steps input {
+    flex: .5;
+    margin: 2%;
+    border-radius: 10px;
+    border: unset;
+    padding: 0% 5%;
+    font-size: 22px;
+    max-height: 80px;
+}
+
+#createEventOptions {
+    display: flex;
+    margin: auto;
+    width: 80%;
+    height: 100px;
+}
+
+#createEventOptions div {
+    text-align: center;
+    font-size: 80px;
+    margin: 0% 15%;
+    flex: 1;
+    transition: all .3s;
+    cursor: pointer;
+}
+
+#createEventOptions div:hover {
+    font-size: 100px;
+}
+
+#createEventOptions #subButton {
+    display: none;
+    margin-top: -1%;
 }
 
 /* Event Pages */
@@ -566,6 +863,12 @@ h3 {
 
 #optionsSection {
     display: flex;
+    flex-direction: column;
+    padding: 3%;
+}
+
+#optionsSection .buttons {
+    margin: 2% auto;
 }
 
 /* Modal */

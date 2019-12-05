@@ -4,9 +4,8 @@
     <section id="scheduleSection">
         <h1 ng-show="!events.length">No plans, for now!</h1>
         <h3 ng-show="events.length">
-            Here's your schedule for today!
+            Here's your events!
         </h3>
-
         <section id="scheduleDisplaySection">
             <section id="scheduleEvent" ng-repeat="x in events">
                 <section class="event" ng-click='viewEvent($index)'>

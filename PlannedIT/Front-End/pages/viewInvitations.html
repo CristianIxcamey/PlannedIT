@@ -1,38 +1,46 @@
-<section class="viewInvite">
-    <h1>{{event.e_Name}}</h1>
-    <h1>{{event.e_Master}}</h1>
-    <h3 id="discription">{{event.e_Description}}</h3>
-    <section id="times">
-        <h2>Times</h2>
-        <h4>{{event.e_Start_Time}} - {{event.e_End_Time}}</h4>
-    </section>
-    <section id="attendees">
-        {{attendeesTittle}}
-        <section ng-repeat="x in event.schedule" class="AttendeeRepeat">
-            <div class="attendee">
-                <h2>{{x}}</h2>
-            </div>
-        </section>
-    </section>
-    <section id="map">
-        <h2>{{event.e_Location}}</h2>
-    </section>
-    <section id="optionsSection">
-        <div class="buttons" ng-click="accept()">Accept Invite</div>
-        <div class="buttons" ng-click="decline()">Decline Invite</div>
-        <div class="buttons" ng-click="counterReq()">Send Counter Request</div>
-    </section>
-    <div id="modal">
-        <div id="modalCont">
-            <div class="ModalH">
-                <span class="Close" ng-click="ModalCloseFunc()">&times;</span>
-                <h2>Select a new Start and End time</h2>
-            </div>
-            <div class="ModalB">
-                <input id="StartDate" type=text" ng-model="dateS" placeholder="Date Start">
-                <input id="EndDate" type=text" ng-model="dateE" placeholder="Date End">
-                <div class="buttons" ng-click="counterSubmit()">Send Counter Request</div>
-            </div>
+<section id="eventDetailSection">
+    <div id="eventImage">
+        <div id="boxShadow">
+            <h1 id="eventName">{{event.e_Name}}</h1>
+            <h2 id="master">By {{event.e_Master}}</h2>
+            <h3 id="time">{{event.e_Start_Time}} - {{event.e_End_Time}}</h3>
+            <h3 id="description">{{event.e_Description}}</h3>
         </div>
     </div>
+</section>
+
+<h2 id="location">Location: {{event.e_Location}}</h2>
+<div id="map"></div>
+
+<section id="optionsSection">
+    <div class="cardButtons" ng-click="accept()">
+        <p>Accept Invite</p>
+        <div class="buttonTextLine"></div>
+    </div>
+    <div class="cardButtons" ng-click="decline()">
+        <p>Decline Invite</p>
+        <div class="buttonTextLine"></div>
+    </div>
+    <div class="cardButtons" ng-click="counterReq()">
+        <p>Send Counter Request</p>
+        <div class="buttonTextLine"></div>
+    </div>
+</section>
+<div id="modal">
+    <div id="modalCont">
+        <div class="ModalH">
+            <span class="Close" ng-click="ModalCloseFunc()">&times;</span>
+            <h2>Select a new Start and End time</h2>
+        </div>
+        <div class="ModalB">
+            <input id="StartDate" type=text" ng-model="dateS" placeholder="Date Start">
+            <input id="EndDate" type=text" ng-model="dateE" placeholder="Date End">
+            <div class="cardButtons" ng-click="counterSubmit()">
+                <p>Send Counter Request</p>
+                <div class="buttonTextLine"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
 </section>

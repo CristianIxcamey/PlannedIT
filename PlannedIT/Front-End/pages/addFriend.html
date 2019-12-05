@@ -4,13 +4,17 @@
         <div class="buttons" ng-click="search()">Search</div>
     </section>
     <section class="userInfoSection">
-        <div class="user">
+        <section class="user">
+            <h1>Username: {{user.username}}</h1>
             <img ng-src="{{user.img}}" />
-            <h2>{{user.name}}</h2>
-            <h2>{{user.email}}</h2>
-        </div>
-        <section id="searchButtonSec">
-            <div class="buttons" ng-click="addFriend()">Add Friend</div>
+            <section class="userInfo">
+                <h3>Name: {{user.name}}</h3>
+                <h3>Email: {{user.email}}</h3>
+            </section>
+            <div class="cardButtons" ng-click="addFriend()">
+                <p>Add Friend</p>
+                <div class="buttonTextLine"></div>
+            </div>
         </section>
     </section>
 </section>
